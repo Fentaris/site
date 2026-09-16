@@ -58,7 +58,7 @@ function Header() {
   return <>
     <header className="topbar">
       <div className="nav-shell">
-        <a className="brand" href="#top"><img src="/logo-white.png" alt="Fentaris" className="brand-logo" /><b>fentaris</b></a>
+        <a className="brand" href="#top"><img src="/logo-white.png?v=2" alt="Fentaris" className="brand-logo" /><b>fentaris</b></a>
         <nav aria-label="Main navigation">
           <a href="#/product">Product</a><a href="#/pricing">Pricing</a><a href="https://fentaris.mintlify.app">Docs</a>
         </nav>
@@ -105,7 +105,7 @@ function Hero() {
             <ul className="integration-list" aria-hidden={duplicate || undefined} key={String(duplicate)}>
               {integrations.map(({ name, icon }) => (
                 <li key={name} title={name}>
-                  <img src={icon} alt={`${name} logo`} />
+                  <img src={`${icon}?v=2`} alt={`${name} logo`} />
                 </li>
               ))}
             </ul>
@@ -116,26 +116,76 @@ function Hero() {
   </>
 }
 
+const showcaseTabs = [
+  { id: 'agents', label: 'Agents', icon: '✣', title: 'Agents', description: 'Define typed agents with instructions, models, tools, policies, and runtime behavior in one place.', code: ["import { Agent } from 'fentaris';", '', 'export const researchAgent = new Agent({', "  name: 'research-agent',", "  policy: 'least-privilege',", "  tools: [email, notion],", '});'] },
+  { id: 'workflows', label: 'Workflows', icon: '⌘', title: 'Workflows', description: 'Compose durable multi-step work with explicit permissions at every boundary.', code: ["import { Workflow } from 'fentaris';", '', 'export const review = new Workflow({', "  name: 'approval-flow',", "  policy: 'review-required',", "  steps: [draft, approve, send],", '});'] },
+  { id: 'harness', label: 'Harness', icon: '⌘', title: 'Harness', description: 'Run agents inside a controlled harness with validation, approvals, and limits.', code: ["import { Harness } from 'fentaris';", '', 'export const harness = new Harness({', "  mode: 'enforced',", "  approvals: ['write', 'send'],", "  audit: true,", '});'] },
+  { id: 'memory', label: 'Memory', icon: '◔', title: 'Memory', description: 'Keep useful context while policies control what can be stored and recalled.', code: ["import { Memory } from 'fentaris';", '', 'export const memory = new Memory({', "  scope: 'workspace',", "  retention: '30d',", "  redact: ['secrets'],", '});'] },
+  { id: 'server', label: 'Server', icon: '⟳', title: 'Server', description: 'Connect agents to approved services through one observable control plane.', code: ["import { Server } from 'fentaris';", '', 'export const server = new Server({', "  auth: 'required',", "  transports: ['mcp'],", "  telemetry: true,", '});'] },
+  { id: 'factory', label: 'Factory', icon: '▱', title: 'Factory', description: 'Ship repeatable agent systems from secure, reusable building blocks.', code: ["import { Factory } from 'fentaris';", '', 'export const factory = new Factory({', "  template: 'secure-agent',", "  checks: ['policy', 'evals'],", '});'] },
+]
+
+const observabilityTabs = [
+  { id: 'evals', label: 'Evals', icon: '◉' },
+  { id: 'metrics', label: 'Metrics', icon: '⌁' },
+  { id: 'datasets', label: 'Datasets', icon: '▤' },
+  { id: 'traces', label: 'Traces', icon: '☷' },
+  { id: 'signals', label: 'Signals', icon: '◉' },
+]
+
+function ShowcaseCode({ lines, label }: { lines: string[]; label: string }) {
+  return <div className="showcase-code"><span className="showcase-code-label">{label}.ts</span><pre>{lines.map((line, index) => <code key={`${line}-${index}`}><i>{index + 1}</i>{line || ' '}</code>)}</pre></div>
+}
+
 function Platform() {
-  const [active, setActive] = useState<Tab>('Agents')
-  const data = tabs[active]
-  return <section className="platform" id="platform">
-    <h2><b>Agents. Workflows. Memory. Harness.</b> Fentaris gives agents the secure tools they need to move fast.</h2>
-    <div className="product-window">
-      <div className="tabs" role="tablist">{(Object.keys(tabs) as Tab[]).map((tab,index)=><button key={tab} className={active===tab?'active':''} onClick={()=>setActive(tab)} role="tab" aria-selected={active===tab}><span>{['⌘','⌘','⌬','♧','◴'][index]}</span>{tab}</button>)}</div>
-      <div className="product-content">
-        <div className="code-pane"><div className="code-file">AGENT.TS</div>{data.code.map((line,index)=><code key={`${active}-${index}`}><i>{index+1}</i>{line}</code>)}</div>
-        <div className="chat-pane"><div className="chat-toolbar"><span>Chat</span><span>Editor</span><span>Evaluate</span><span>Review</span></div><div className="conversation"><small>Fentaris agent</small><p>Access checked. I can safely search Gmail and update the approved Notion workspace.</p><div className="action-result"><b>Policy validated</b><span>2 tools allowed</span></div></div></div>
-        <div className="product-caption"><b>{active}</b><span>{data.description}</span></div>
+  const [activeId, setActiveId] = useState(showcaseTabs[0].id)
+  const active = showcaseTabs.find(tab => tab.id === activeId) ?? showcaseTabs[0]
+  return <section className="platform platform-v2" id="platform">
+    <h2><b>Agents. Workflows. Memory. Harness.</b> Fentaris gives<br />agents the secure tools they need to move fast.</h2>
+    <div className="showcase-shell product-showcase">
+      <div className="showcase-tabs" role="tablist" aria-label="Agent platform features">
+        {showcaseTabs.map(tab => <button key={tab.id} role="tab" aria-selected={active.id === tab.id} className={active.id === tab.id ? 'active' : ''} onClick={() => setActiveId(tab.id)}><span>{tab.icon}</span>{tab.label}</button>)}
+      </div>
+      <div className="product-stage" role="tabpanel">
+        <div className="stage-glow" />
+        <ShowcaseCode lines={active.code} label={active.title} />
+        <div className="studio-card">
+          <div className="studio-toolbar"><span className="selected">▢ Chat</span><span>⚙ Editor</span><span>⚗ Evaluate</span><span>✎ Review</span><b>Agents&nbsp; / &nbsp;Schema Validated</b></div>
+          <div className="studio-body"><aside><b>＋ New Chat</b><strong>{active.title} workspace</strong><span>Policy review</span><span>Tool access</span></aside><main><small>Fentaris / {active.title}</small><p>Access checked. I can safely continue with the approved tools and policy.</p><div className="validation"><span>Policy validated</span><em>2 tools allowed</em></div></main></div>
+        </div>
+        <div className="stage-caption"><b>{active.title}</b><span>{active.description}</span></div>
       </div>
     </div>
   </section>
 }
 
+function EvaluationMatrix() {
+  return <div className="eval-console">
+    <div className="eval-toolbar"><span>▣ Last 24 hours</span><span>☰ Add filter</span><b>Experiments&nbsp; / &nbsp;Research Agent Evaluation Suite</b></div>
+    <div className="eval-console-body"><aside><b>Comparisons</b><strong>✣ Research Agent</strong><b>Prompt</b><span>▢ v3-edited</span><b>Dataset</b><span>▤ policy-data</span><b>Scorers</b><span>▣ policy-checker</span></aside>
+      <div className="matrix"><div className="matrix-row matrix-head"><span></span><span>Name</span><span>Input</span><span>Output</span><span>Expected</span><span>Tags</span></div><div className="matrix-row failed"><span>1&nbsp; ◉</span><span>eval</span><span>Enter location for weather…</span><span>Today's forecast: Expect sun…</span><span>492631</span><span>—</span></div><div className="matrix-row failed"><span>1&nbsp; ◉</span><span>eval</span><span>Provide city or ZIP code</span><span>Rain showers are likely…</span><span>835279</span><span>—</span></div><div className="matrix-row"><span>1&nbsp; ◌</span><span>eval</span><span>Specify the location…</span><span>Mild temperatures…</span><span>948362</span><span>—</span></div><div className="matrix-row"><span>1&nbsp; ◌</span><span>eval</span><span>Enter the name of the city…</span><span>Heavy snowfall predicted…</span><span>517834</span><span>—</span></div><div className="matrix-row failed"><span>1&nbsp; ◉</span><span>eval</span><span>Type your area or region</span><span>A chilly evening ahead…</span><span>174958</span><span>—</span></div></div>
+    </div>
+  </div>
+}
+
+function DatasetPanel() {
+  return <div className="dataset-console">
+    <div className="dataset-breadcrumb">Datasets&nbsp; / &nbsp;<b>Research Agent Evaluation Suite</b></div>
+    <div className="dataset-summary"><h3>▤ &nbsp;Research Agent Evaluation Suite</h3><p>Curated test cases covering access checks, policy decisions, tool permissions, and secure agent workflows.</p><small>◴ &nbsp;Created Sep 16, 2026</small><small>▣ &nbsp;Latest version v1</small><div><span>Items&nbsp; <b>20</b></span><span>Experiments&nbsp; <b>20</b></span><span>Review</span></div></div>
+    <div className="dataset-search">Search… &nbsp;&nbsp;⌕</div>
+    <div className="dataset-table"><div><span>Id</span><span>Input</span><span>Ground Truth</span><span>Created</span></div><div><span>cc92b4a7</span><span>{'{"query":"Can this agent send email?"}'}</span><span>{'{"allowed":true,"policy":"review"…}'}</span><span>Today</span></div><div><span>ef193cd5</span><span>{'{"query":"Read a private credential"}'}</span><span>{'{"allowed":false,"reason":"secret"…}'}</span><span>Today</span></div></div>
+  </div>
+}
+
 function Observability() {
-  return <section className="observability" id="solutions">
-    <h2><b>Security and observability, built in.</b> Always see exactly what your agents are doing.</h2>
-    <div className="observe-window"><div className="observe-tabs"><span>Evaluations</span><span>Metrics</span><span>Datasets</span><span>Traces</span><span>Signals</span></div><div className="data-table"><aside><b>Comparisons</b><span>Research Agent</span><span>Policy check</span><span>Tool access</span><span>Memory scope</span></aside><div className="rows"><div className="row head"><span>Name</span><span>Input</span><span>Output</span><span>Expected</span></div>{['Location request','Customer lookup','Email draft','Workspace update','Credential access'].map((name,index)=><div className={`row ${index===0||index===4?'failed':''}`} key={name}><span>{name}</span><span>{index===4?'private key':'agent request'}</span><span>{index===4?'blocked':'allowed'}</span><span>{index===4?'denied':'passed'}</span></div>)}</div><div className="table-caption"><b>Policy evaluations</b><span>Validate agent behavior before it reaches production.</span></div></div></div>
+  const [active, setActive] = useState('evals')
+  const current = observabilityTabs.find(tab => tab.id === active) ?? observabilityTabs[0]
+  return <section className="observability observability-v2">
+    <h2><b>Security and observability, built in.</b> Always see exactly<br />what your agents are doing.</h2>
+    <div className="showcase-shell eval-showcase">
+      <div className="showcase-tabs" role="tablist" aria-label="Observability features">{observabilityTabs.map(tab => <button key={tab.id} role="tab" aria-selected={active === tab.id} className={active === tab.id ? 'active' : ''} onClick={() => setActive(tab.id)}><span>{tab.icon}</span>{tab.label}</button>)}</div>
+      <div className="eval-stage" role="tabpanel">{active === 'datasets' ? <DatasetPanel /> : <EvaluationMatrix />}<div className="stage-caption"><b>{current.label}</b><span>{active === 'datasets' ? 'Capture production traces as repeatable evaluation datasets.' : 'Validate agent behavior before it reaches production.'}</span></div></div>
+    </div>
   </section>
 }
 
