@@ -1,4 +1,11 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import Prism from 'prismjs'
+import 'prismjs/components/prism-typescript'
+import claudeLogo from './assets/clients/claude.svg'
+import codexLogo from './assets/clients/codex.svg'
+import cursorLogo from './assets/clients/cursor.svg'
+import linearLogo from './assets/clients/linear.svg'
+import notionLogo from './assets/clients/notion.svg'
 
 const Arrow = ({ diagonal = false }: { diagonal?: boolean }) => <span aria-hidden="true">{diagonal ? '↗' : '→'}</span>
 
@@ -92,16 +99,31 @@ function Hero() {
 }
 
 const showcaseTabs = [
-  { id: 'servers', label: 'Servers', icon: '⟳', title: 'Servers', description: 'Add local or remote MCP servers without changing the endpoint your clients use.', code: ["import { fentaris, stdio } from '@fentaris/core';", '', 'const app = fentaris();', "app.mcp('filesystem', {", '  transport: stdio({', "    command: 'npx',", '  }),', '});'] },
-  { id: 'routing', label: 'Routing', icon: '⌘', title: 'Routing', description: 'Give every upstream a stable namespace and expose them all through one MCP endpoint.', code: ["app.mcp('github', {", '  transport: stdio({', "    command: 'npx',", "    args: ['-y', '@modelcontextprotocol/server-github'],", '  }),', '});', '', "// github__list_issues"] },
-  { id: 'policies', label: 'Policies', icon: '◇', title: 'Policies', description: 'Decide which tools each user or group can discover and call before execution.', code: ["app.policy('read-only')", "  .mcp('filesystem')", "  .allow('list_directory');", '', "app.group('operators')", "  .policy('read-only');"] },
-  { id: 'identity', label: 'Identity', icon: '◔', title: 'Identity', description: 'Authenticate MCP clients with API keys and resolve every request to an identity.', code: ["app.group('operators')", "  .users(user('alice', {", "    email: 'alice@example.com',", '  }))', "  .policy('read-only');"] },
-  { id: 'auth', label: 'OAuth', icon: '✣', title: 'OAuth', description: 'Connect protected remote MCP servers while Fentaris handles OAuth 2.1 credentials.', code: ["app.mcp('linear', {", '  transport: streamableHttp({', "    url: 'https://mcp.linear.app/mcp',", '  }),', '  auth: oauth(),', '});'] },
-  { id: 'events', label: 'Observe', icon: '⌁', title: 'Observe', description: 'Trace every proxied operation with lifecycle events, request context, and duration.', code: ["app.on('tool:success', ({ ctx, durationMs }) => {", "  ctx.log.info('tool.success', {", '    tool: ctx.tool?.name,', '    durationMs,', '  });', '});'] },
+  { id: 'servers', label: 'Servers', icon: '⟳', title: 'Servers', description: 'Register local and remote servers, inspect their health, and expose every tool through the same endpoint.', code: ['import { fentaris, stdio }', "  from '@fentaris/core';", '', 'const app = fentaris();', "app.mcp('filesystem', {", '  transport: stdio({', "    command: 'npx',", '    args: [', "      '-y',", "      '@modelcontextprotocol/server-filesystem',", "      '/tmp',", '    ],', '  }),', '});'] },
+  { id: 'routing', label: 'Routing', icon: '⌘', title: 'Routing', description: 'Resolve every namespaced tool call to the right upstream without changing client configuration.', code: ["app.mcp('github', {", '  transport: stdio({', "    command: 'npx',", "    args: ['-y', '...server-github'],", '  }),', '});', '', '// exposed as github__list_issues'] },
+  { id: 'policies', label: 'Policies', icon: '◇', title: 'Policies', description: 'Evaluate identity, group, server, and tool rules before an upstream request can run.', code: ["app.policy('read-only')", "  .mcp('filesystem')", "  .allow('list_directory');", '', "app.group('operators')", "  .policy('read-only');"] },
+  { id: 'identity', label: 'Identity', icon: '◔', title: 'Identity', description: 'Turn an incoming API key into a trusted request context with users, groups, and attached policies.', code: ['$ fentaris auth api-key add alice --generate', '', "app.group('operators')", "  .users(user('alice', {", "    email: 'alice@example.com',", '  }))', "  .policy('read-only');"] },
+  { id: 'auth', label: 'OAuth', icon: '✣', title: 'OAuth', description: 'Connect OAuth-protected remote servers while keeping upstream tokens out of application code and logs.', code: ["app.mcp('linear', {", '  transport: streamableHttp({', "    url: 'https://mcp.linear.app/mcp',", '  }),', '  auth: oauth(),', '});'] },
+  { id: 'events', label: 'Observe', icon: '⌁', title: 'Observe', description: 'Follow authentication, policy, upstream execution, result, and duration in one request trace.', code: ["app.on('tool:success', (", '  { ctx, durationMs }', ') => {', "  ctx.log.info('tool.success', {", '    tool: ctx.tool?.name,', '    durationMs,', '  });', '});'] },
 ]
 
 function ShowcaseCode({ lines, label }: { lines: string[]; label: string }) {
-  return <div className="showcase-code"><span className="showcase-code-label">{label}.ts</span><pre>{lines.map((line, index) => <code key={`${line}-${index}`}><i>{index + 1}</i>{line || ' '}</code>)}</pre></div>
+  const highlightedLines = useMemo(
+    () => lines.map(line => Prism.highlight(line || ' ', Prism.languages.typescript, 'typescript')),
+    [lines],
+  )
+
+  return <div className="showcase-code"><span className="showcase-code-label">{label}.ts</span><pre>{highlightedLines.map((line, index) => <code key={`${lines[index]}-${index}`}><i>{index + 1}</i><span dangerouslySetInnerHTML={{ __html: line }} /></code>)}</pre></div>
+}
+
+function FeatureConsole({ feature }: { feature: string }) {
+  const header = <div className="feature-console-top"><span><Logo />Fentaris</span><code>http://localhost:4000/mcp</code><b>● LIVE</b></div>
+  if (feature === 'servers') return <div className="feature-console servers-console">{header}<div className="console-heading"><div><small>UPSTREAM REGISTRY</small><h3>3 servers</h3></div><span className="console-action">＋ Add server</span></div><div className="server-rows"><div><i>GH</i><span><b>github</b><small>stdio · 12 tools</small></span><em>Healthy</em></div><div><i>LI</i><span><b>linear</b><small>Streamable HTTP · 18 tools</small></span><em>Healthy</em></div><div><i>FS</i><span><b>filesystem</b><small>stdio · 14 tools</small></span><em>Local</em></div></div></div>
+  if (feature === 'routing') return <div className="feature-console routing-console">{header}<div className="console-heading"><div><small>ROUTE INSPECTOR</small><h3>Tool call resolved</h3></div><em>184 ms</em></div><div className="route-request"><small>INCOMING MCP REQUEST</small><code>tools/call&nbsp;&nbsp; github__list_issues</code></div><div className="route-rail"><span><i>01</i><b>Namespace</b><small>github</small></span><span><i>02</i><b>Upstream</b><small>github · stdio</small></span><span><i>03</i><b>Operation</b><small>list_issues</small></span></div></div>
+  if (feature === 'policies') return <div className="feature-console policies-console">{header}<div className="decision-head"><span><i>✓</i><small>POLICY DECISION</small><b>Allowed</b></span><code>2 ms</code></div><dl className="decision-grid"><div><dt>Identity</dt><dd>alice@example.com</dd></div><div><dt>Groups</dt><dd>operators</dd></div><div><dt>Target</dt><dd>filesystem__list_directory</dd></div><div><dt>Matched rule</dt><dd>read-only / allow</dd></div></dl><div className="decision-foot">Request may continue to the filesystem upstream.</div></div>
+  if (feature === 'identity') return <div className="feature-console identity-console">{header}<div className="identity-profile"><i>A</i><span><small>RESOLVED IDENTITY</small><h3>Alice</h3><p>alice@example.com</p></span><em>API key verified</em></div><div className="identity-context"><section><small>GROUP</small><b>operators</b><span>1 active membership</span></section><section><small>ATTACHED POLICY</small><b>read-only</b><span>tool discovery filtered</span></section></div><div className="identity-foot"><span>Request context</span><code>user:alice · group:operators</code></div></div>
+  if (feature === 'auth') return <div className="feature-console oauth-console">{header}<div className="oauth-connection"><i>LI</i><span><small>REMOTE MCP CONNECTION</small><h3>Linear</h3><p>https://mcp.linear.app/mcp</p></span><em>Connected</em></div><div className="oauth-details"><div><small>AUTHORIZATION</small><b>OAuth 2.1</b></div><div><small>TOKEN</small><b>Encrypted · managed</b></div><div><small>REFRESH</small><b>Automatic</b></div></div><div className="oauth-safe">Credential values are redacted from middleware, policies, and logs.</div></div>
+  return <div className="feature-console events-console">{header}<div className="console-heading"><div><small>REQUEST TRACE</small><h3>github__list_issues</h3></div><em>success · 184 ms</em></div><div className="trace-events"><div><i /><code>00 ms</code><span><b>client.authenticated</b><small>identity alice resolved</small></span></div><div><i /><code>04 ms</code><span><b>policy.allowed</b><small>operators / github read</small></span></div><div><i /><code>06 ms</code><span><b>upstream.request</b><small>github · stdio</small></span></div><div><i /><code>184 ms</code><span><b>tool.success</b><small>response returned to client</small></span></div></div></div>
 }
 
 function Platform() {
@@ -124,10 +146,7 @@ function Platform() {
         <div className="product-stage-content">
           <div className="stage-glow" />
           <ShowcaseCode lines={active.code} label={active.title} />
-          <div className="studio-card">
-            <div className="studio-toolbar"><span className="selected">▣ Requests</span><span>⚙ Servers</span><span>◇ Policies</span><span>⌁ Events</span><b>Control plane&nbsp; / &nbsp;Live</b></div>
-            <div className="studio-body"><aside><b>＋ Add server</b><strong>{active.title}</strong><span>github · healthy</span><span>notion · healthy</span><span>filesystem · local</span></aside><main><small>Fentaris / {active.title}</small><p>Request authenticated, checked against policy, and routed to the approved upstream.</p><div className="validation"><span>github__list_issues</span><em>allowed · 184ms</em></div></main></div>
-          </div>
+          <FeatureConsole feature={active.id} />
           <div className="stage-caption"><b>{active.title}</b><span>{active.description}</span></div>
         </div>
       </div>
@@ -136,40 +155,137 @@ function Platform() {
 }
 
 const flowSteps = [
-  { label: 'Connect', title: 'The client calls one endpoint.', copy: 'Claude, Codex, or your own app connects to Fentaris instead of configuring every MCP server separately.', event: 'POST /mcp · tools/call', result: 'client identified' },
-  { label: 'Control', title: 'Fentaris checks and routes.', copy: 'Identity, policy, middleware, approvals, and rate limits run before the request reaches an upstream server.', event: 'github__list_issues', result: 'policy allowed' },
-  { label: 'Run', title: 'The MCP server does its job.', copy: 'Fentaris supplies upstream authentication, forwards the call, and records the result before returning it to the client.', event: 'tool.success · 184ms', result: 'response returned' },
+  { label: 'MCP clients', title: 'Clients send MCP requests to Fentaris.', copy: 'Claude Code, Codex, Cursor, and custom clients use the same endpoint for initialization, tool discovery, and tool calls.' },
+  { label: 'Client authentication', title: 'Fentaris identifies the caller.', copy: 'It validates the client API key, loads the associated identity, and resolves the user and groups used by downstream policy checks.' },
+  { label: 'Authorization', title: 'Fentaris checks whether the action is allowed.', copy: 'The policy engine evaluates the resolved identity, MCP operation, server, and tool. A denied request stops here and never reaches the upstream.' },
+  { label: 'Upstream request', title: 'Fentaris authenticates to the MCP server.', copy: 'It loads the upstream credentials, sends the request through the configured transport, receives the response, and records lifecycle events.' },
+  { label: 'MCP response', title: 'The result returns to the client.', copy: 'The selected server executes the tool. Fentaris records the outcome and duration, then returns the MCP response to the original client.' },
 ]
 
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  useEffect(() => {
-    if (!isPlaying) return
-    const timer = window.setInterval(() => setActiveStep(step => (step + 1) % flowSteps.length), 3600)
-    return () => window.clearInterval(timer)
-  }, [isPlaying])
-  const active = flowSteps[activeStep]
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([])
 
-  return <section className="mcp-flow" id="how-it-works">
-    <h2><b>One endpoint in. The right server out.</b><br />See what happens to every MCP request.</h2>
-    <div className="flow-shell" data-step={activeStep}>
-      <div className="flow-tabs" role="tablist" aria-label="How an MCP request moves through Fentaris">
-        {flowSteps.map((step, index) => <button key={step.label} role="tab" aria-selected={activeStep === index} className={activeStep === index ? 'active' : ''} onClick={() => setActiveStep(index)}><i>0{index + 1}</i><span>{step.label}</span><em /></button>)}
-      </div>
-      <div className="flow-stage">
-        <button className="flow-pause" onClick={() => setIsPlaying(playing => !playing)} aria-label={isPlaying ? 'Pause request demo' : 'Play request demo'}>{isPlaying ? 'Ⅱ Pause' : '▶ Play'}</button>
-        <div className="flow-topology" aria-label="MCP clients connect through Fentaris to upstream MCP servers">
-          <div className="flow-column flow-clients"><small>MCP clients</small><span>Claude Desktop</span><span>Codex</span><span>Your app</span></div>
-          <div className="flow-wire wire-in"><i /></div>
-          <div className="flow-core"><Logo /><strong>fentaris</strong><small>ONE /MCP ENDPOINT</small><ul><li>Identity</li><li>Policy</li><li>Routing</li><li>Logs</li></ul></div>
-          <div className="flow-wire wire-out"><i /></div>
-          <div className="flow-column flow-servers"><small>MCP servers</small><span>GitHub <i>HTTP</i></span><span>Linear <i>OAuth</i></span><span>Filesystem <i>stdio</i></span></div>
+  useEffect(() => {
+    let frame = 0
+    const updateStep = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        const activationLine = window.innerHeight * .52
+        const reachedStep = stepRefs.current.reduce((active, step, index) => {
+          if (!step) return active
+          return step.getBoundingClientRect().top <= activationLine ? index : active
+        }, 0)
+        setActiveStep(reachedStep)
+      })
+    }
+    updateStep()
+    window.addEventListener('scroll', updateStep, { passive: true })
+    window.addEventListener('resize', updateStep)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateStep)
+      window.removeEventListener('resize', updateStep)
+    }
+  }, [])
+
+  return <section className="request-flow" id="how-it-works">
+    <h2><b>One request. One control plane.</b><span>Follow a tool call from the MCP client<br />to the right server and back.</span></h2>
+    <div className="scroll-flow-shell">
+      <div className="flow-sticky" aria-label="MCP request lifecycle" aria-live="polite">
+        <div className="request-graph" data-step={activeStep}>
+          <div className="graph-clients">
+            <div className="graph-item"><img src={claudeLogo} alt="" /><b>Claude Code</b></div>
+            <div className="graph-item"><img src={codexLogo} alt="" /><b>Codex</b></div>
+            <div className="graph-item"><img src={cursorLogo} alt="" /><b>Cursor</b></div>
+            <div className="graph-item"><i className="client-mark app-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v5M8 14l-2 2 2 2M16 14l2 2-2 2" /></svg></i><b>Custom client</b></div>
+          </div>
+          <svg className="graph-lines lines-in" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path d="M12 0 V24 H50 V50" /><path d="M37 0 V34 H50 V50" /><path d="M63 0 V34 H50 V50" /><path d="M88 0 V24 H50 V50" /></svg>
+          <div className="graph-core">
+            <div className="graph-core-brand"><Logo /><b>fentaris</b></div>
+            <div className="fentaris-pipeline"><div className="pipeline-track"><span className="pipeline-auth"><b>Authenticate</b></span><span className="pipeline-policy"><b>Authorize</b></span><span className="pipeline-upstream"><b>Proxy request</b></span></div></div>
+            <div className="core-silo identity-silo"><i className="silo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3" /><path d="M5.5 19c.7-3.3 3-5 6.5-5s5.8 1.7 6.5 5" /></svg></i><span>Identities</span></div>
+            <div className="core-silo policy-silo"><i className="silo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 19 6v5.3c0 4.2-2.8 7.5-7 9.2-4.2-1.7-7-5-7-9.2V6Z" /><path d="m8.8 11.8 2.1 2.1 4.4-4.5" /></svg></i><span>Policies</span></div>
+            <div className="core-silo secrets-silo"><i className="silo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="12" r="3.5" /><path d="M12 12h8M17 12v3M14.5 12v2" /></svg></i><span>Credentials</span></div>
+            <div className="core-silo events-silo"><i className="silo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13" /><circle cx="18" cy="12" r="2" /></svg></i><span>Events</span></div>
+          </div>
+          <svg className="graph-lines lines-out" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path d="M50 0 V24 H12 V50" /><path d="M50 0 V34 H37 V50" /><path d="M50 0 V34 H63 V50" /><path d="M50 0 V24 H88 V50" /></svg>
+          <div className="graph-servers">
+            <div className="graph-item"><i className="server-mark github-mark"><Github /></i><b>GitHub</b></div>
+            <div className="graph-item"><img src={linearLogo} alt="" /><b>Linear</b></div>
+            <div className="graph-item"><img src={notionLogo} alt="" /><b>Notion</b></div>
+            <div className="graph-item"><i className="server-mark filesystem-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h7l2 2h9v9.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /><path d="M3 9h18" /></svg></i><b>Filesystem</b></div>
+          </div>
         </div>
-        <div className="flow-detail" aria-live="polite"><small>Step 0{activeStep + 1}</small><h3>{active.title}</h3><p>{active.copy}</p><div><code>{active.event}</code><span>✓ {active.result}</span></div></div>
       </div>
+      <div className="flow-scroll-copy">{flowSteps.map((step, index) => <div className={activeStep === index ? 'flow-scroll-step active' : 'flow-scroll-step'} data-flow-step={index} ref={element => { stepRefs.current[index] = element }} key={step.label}><h3>{step.title}</h3><p>{step.copy}</p></div>)}</div>
     </div>
   </section>
+}
+
+const controlPlanePoints = [
+  { title: 'Change the gateway, not every client', copy: 'Add, remove, or replace upstream servers while clients keep using the same Fentaris endpoint.' },
+  { title: 'Keep tool names predictable', copy: 'Every upstream stays namespaced, so tools remain stable as your MCP stack grows.' },
+  { title: 'Apply decisions once', copy: 'Authentication, policy, middleware, approvals, rate limits, and logs live at the shared boundary.' },
+]
+
+function ControlPlaneStory() {
+  return <section className="control-story">
+    <div className="story-shell">
+      <div className="story-intro"><h2>Stop managing MCP<br /><span>one client at a time.</span></h2><p>Direct connections are simple at first. Then every agent has its own server list, credentials, permissions, and failure modes. Fentaris moves that operational complexity into one control plane.</p></div>
+      <div className="story-list">{controlPlanePoints.map(point => <article key={point.title}><h3>{point.title}</h3><p>{point.copy}</p></article>)}</div>
+    </div>
+  </section>
+}
+
+const quickstartCommands = [
+  'npm install -g @fentaris/cli',
+  'fentaris init my-proxy',
+  'cd my-proxy',
+  'fentaris dev',
+]
+
+function QuickstartSection() {
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const terminal = terminalRef.current
+    if (!terminal || !('IntersectionObserver' in window)) {
+      setIsVisible(true)
+      return
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      setIsVisible(true)
+      observer.disconnect()
+    }, { threshold: .35 })
+    observer.observe(terminal)
+    return () => observer.disconnect()
+  }, [])
+
+  return <section className="home-quickstart" id="quickstart">
+    <div className="quickstart-heading"><h2>Your first MCP control plane<br /><span>in a few commands.</span></h2></div>
+    <div ref={terminalRef} className={`quickstart-terminal${isVisible ? ' is-visible' : ''}`} aria-label={`Terminal commands: ${quickstartCommands.join(', ')}`}>
+      <div className="terminal-top" aria-hidden="true"><span /><span /><span /><b>terminal</b></div>
+      <pre aria-hidden="true"><code>{quickstartCommands.map((command, index) => <span className="terminal-line" key={command}><i>$</i><span className="terminal-command" style={{ '--chars': command.length, '--delay': `${index * 1.05 + .35}s` } as CSSProperties}>{command}</span>{index === quickstartCommands.length - 1 && <em className="terminal-cursor" />}</span>)}</code></pre>
+    </div>
+  </section>
+}
+
+const faqs = [
+  ['What is Fentaris?', 'Fentaris is an open-source control plane and proxy for MCP servers. It gives MCP clients one endpoint while centralizing routing, identity, policy, authentication, and observability.'],
+  ['Do I need to change my MCP servers?', 'No. Fentaris sits between MCP clients and upstream servers, and supports local stdio as well as remote HTTP-based transports.'],
+  ['Can I use it with more than one AI client?', 'Yes. Any compatible MCP client can connect to the same endpoint and receive the tools allowed for its resolved identity and policies.'],
+  ['How are remote credentials handled?', 'Upstreams can use API keys, bearer tokens, custom headers, or OAuth 2.1. Credential values are kept away from middleware, hooks, logs, and policy callbacks.'],
+]
+
+function FaqSection() {
+  return <section className="faq-section"><div className="faq-shell"><div><h2>Common questions<br /></h2></div><div className="faq-list">{faqs.map(([question, answer], index) => <details key={question} open={index === 0}><summary>{question}<span>＋</span></summary><p>{answer}</p></details>)}</div></div></section>
+}
+
+function HomeCta() {
+  return <section className="home-cta"><div className="home-cta-glow" /><h2>One endpoint for every server.<br /><span>One place to stay in control.</span></h2><div><a className="cta-primary" href="https://fentaris.mintlify.app/getting-started/quickstart">Build your first proxy <Arrow /></a><a className="cta-secondary" href="https://github.com/Fentaris/fentaris"><Github /> View on GitHub</a></div></section>
 }
 
 type Route = 'home' | 'product' | 'pricing' | 'landing2'
@@ -334,7 +450,7 @@ function Landing2Page() {
 }
 
 function Footer() {
-  return <footer><a className="brand" href="#top"><Logo /><b>fentaris</b></a><p>The control plane for your MCP servers.</p><span>© 2026 Fentaris</span></footer>
+  return <footer className="site-footer"><div className="footer-main"><div className="footer-brand"><a className="brand" href="#top"><Logo /><b>fentaris</b></a><p>The open-source control plane for your MCP servers.</p><span>Run, route, manage, and observe MCP through one stable endpoint.</span></div><div className="footer-column"><b>Product</b><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#quickstart">Quickstart</a></div><div className="footer-column"><b>Resources</b><a href="https://fentaris.mintlify.app">Documentation</a><a href="https://fentaris.mintlify.app/concepts/architecture">Architecture</a><a href="https://fentaris.mintlify.app/getting-started/quickstart">Getting started</a></div><div className="footer-column"><b>Community</b><a href="https://github.com/Fentaris/fentaris">GitHub</a><a href="https://github.com/Fentaris/fentaris/issues">Issues</a><a href="https://github.com/Fentaris/fentaris/blob/main/LICENSE.txt">MIT License</a></div></div><div className="footer-bottom"><span>© 2026 Fentaris</span><span>Built for the Model Context Protocol.</span></div></footer>
 }
 
 function App() {
@@ -347,7 +463,7 @@ function App() {
   if (route === 'landing2') return <main><Landing2Page /></main>
   if (route === 'product') return <main><Header /><ProductPage /><Footer /></main>
   if (route === 'pricing') return <main><Header /><PricingPage /><Footer /></main>
-  return <main><Header /><Hero /><Platform /><HowItWorks /><Footer /></main>
+  return <main><Header /><Hero /><ControlPlaneStory /><Platform /><HowItWorks /><QuickstartSection /><FaqSection /><HomeCta /><Footer /></main>
 }
 
 export default App
