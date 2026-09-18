@@ -29,31 +29,6 @@ const integrations = [
   { name: 'GitLab', icon: '/integrations/gitlab.svg' },
 ]
 
-const tabs = {
-  Agents: {
-    description: 'Define secure agents with instructions, tools, policies, and runtime identity.',
-    code: ["import { Agent } from 'fentaris'", '', 'export const researchAgent = new Agent({', "  name: 'research-agent',", "  policy: 'least-privilege',", '  tools: [gmail, notion],', '})'],
-  },
-  Workflows: {
-    description: 'Build durable, observable workflows with approvals at every sensitive step.',
-    code: ["import { Workflow } from 'fentaris'", '', "export const review = new Workflow('review')", "  .step('read', readInbox)", "  .approve('send-email')", "  .step('send', sendReply)"],
-  },
-  Harness: {
-    description: 'Bring one security and observability layer to every agent framework.',
-    code: ["import { secure } from 'fentaris'", '', 'export const agent = secure(existingAgent, {', '  identity: true,', '  observe: true,', '  enforce: policies,', '})'],
-  },
-  Memory: {
-    description: 'Keep agent memory useful, isolated, auditable, and under your control.',
-    code: ["import { Memory } from 'fentaris'", '', 'const memory = new Memory({', "  namespace: 'support',", "  retention: '24h',", '  pii: false,', '})'],
-  },
-  Server: {
-    description: 'Run a unified MCP gateway with policy enforcement built into every request.',
-    code: ["import { Server } from 'fentaris'", '', 'new Server({', '  upstreams: [gmail, notion],', '  authorize: policy.check,', '  audit: true,', '}).listen()'],
-  },
-}
-
-type Tab = keyof typeof tabs
-
 function Header() {
   return <>
     <header className="topbar">
@@ -71,34 +46,34 @@ function Header() {
 }
 
 function AgentVisual() {
-  return <div className="hero-visual" aria-label="Fentaris agent observability preview">
+  return <div className="hero-visual" aria-label="Fentaris MCP request preview">
     <div className="trace-card">
-      <div className="trace-title">agent run: 'research-agent'</div>
-      <div className="trace-line"><span>input processor: policy-check</span><em className="bar green" /></div>
-      <div className="trace-line"><span>tool: 'gmail.search'</span><em className="bar purple" /></div>
-      <div className="trace-line"><span>memory: 'workspace'</span><em className="bar short" /></div>
-      <div className="trace-line"><span>output processor: audit-log</span><em className="bar amber" /></div>
+      <div className="trace-title">mcp request: 'github.list_issues'</div>
+      <div className="trace-line"><span>client: api-key authenticated</span><em className="bar green" /></div>
+      <div className="trace-line"><span>policy: tool allowed</span><em className="bar purple" /></div>
+      <div className="trace-line"><span>route: github upstream</span><em className="bar short" /></div>
+      <div className="trace-line"><span>event: tool.success · 184ms</span><em className="bar amber" /></div>
     </div>
-    <div className="project-card"><small>fentaris-project</small><span><CodeIcon>▣</CodeIcon>agents</span><span><CodeIcon>□</CodeIcon>tools</span><span><CodeIcon>≋</CodeIcon>policies</span><span><CodeIcon>⌁</CodeIcon>servers</span><span><CodeIcon>TS</CodeIcon>index.ts</span></div>
+    <div className="project-card"><small>one stable /mcp endpoint</small><span><CodeIcon>↳</CodeIcon>github</span><span><CodeIcon>↳</CodeIcon>notion</span><span><CodeIcon>↳</CodeIcon>filesystem</span><span><CodeIcon>≋</CodeIcon>policies</span><span><CodeIcon>⌁</CodeIcon>request logs</span></div>
   </div>
 }
 
 function Hero() {
   const [copied, setCopied] = useState(false)
-  const copy = async () => { await navigator.clipboard.writeText('Hello world'); setCopied(true); setTimeout(() => setCopied(false), 1600) }
+  const copy = async () => { await navigator.clipboard.writeText('npm install -g @fentaris/cli'); setCopied(true); setTimeout(() => setCopied(false), 1600) }
   return <>
     <section className="hero" id="top">
       <div className="hero-shell">
         <div className="hero-copy">
-          <h1>Secure your AI agents</h1>
-          <p>Manage, <span>observe</span>, and <span>protect</span> the agents that run your business with Fentaris, the secure infrastructure for the agentic era.</p>
-          <div className="hero-links" id="setup"><button onClick={copy}>{copied ? 'Prompt copied' : 'Copy agent prompt'}</button><a href="https://fentaris.mintlify.app">Quickstart <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></a></div>
+          <h1>Manage every MCP</h1>
+          <p>Run, route, and manage every MCP server behind <span>one stable endpoint</span>—with authentication, policy, and observability built in</p>
+          <div className="hero-links" id="setup"><button onClick={copy}>{copied ? 'Command copied' : 'Copy install command'}</button><a href="https://fentaris.mintlify.app/getting-started/quickstart">Quickstart <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></a></div>
         </div>
         <AgentVisual />
       </div>
     </section>
     <section className="integrations" id="integrations" aria-labelledby="integrations-title">
-      <p id="integrations-title">Connect to any agent to any tool</p>
+      <p id="integrations-title">Bring every tool behind one MCP endpoint</p>
       <div className="integration-marquee">
         <div className="integration-track">
           {[false, true].map((duplicate) => (
@@ -117,20 +92,12 @@ function Hero() {
 }
 
 const showcaseTabs = [
-  { id: 'agents', label: 'Agents', icon: '✣', title: 'Agents', description: 'Define typed agents with instructions, models, tools, policies, and runtime behavior in one place.', code: ["import { Agent } from 'fentaris';", '', 'export const researchAgent = new Agent({', "  name: 'research-agent',", "  policy: 'least-privilege',", "  tools: [email, notion],", '});'] },
-  { id: 'workflows', label: 'Workflows', icon: '⌘', title: 'Workflows', description: 'Compose durable multi-step work with explicit permissions at every boundary.', code: ["import { Workflow } from 'fentaris';", '', 'export const review = new Workflow({', "  name: 'approval-flow',", "  policy: 'review-required',", "  steps: [draft, approve, send],", '});'] },
-  { id: 'harness', label: 'Harness', icon: '⌘', title: 'Harness', description: 'Run agents inside a controlled harness with validation, approvals, and limits.', code: ["import { Harness } from 'fentaris';", '', 'export const harness = new Harness({', "  mode: 'enforced',", "  approvals: ['write', 'send'],", "  audit: true,", '});'] },
-  { id: 'memory', label: 'Memory', icon: '◔', title: 'Memory', description: 'Keep useful context while policies control what can be stored and recalled.', code: ["import { Memory } from 'fentaris';", '', 'export const memory = new Memory({', "  scope: 'workspace',", "  retention: '30d',", "  redact: ['secrets'],", '});'] },
-  { id: 'server', label: 'Server', icon: '⟳', title: 'Server', description: 'Connect agents to approved services through one observable control plane.', code: ["import { Server } from 'fentaris';", '', 'export const server = new Server({', "  auth: 'required',", "  transports: ['mcp'],", "  telemetry: true,", '});'] },
-  { id: 'factory', label: 'Factory', icon: '▱', title: 'Factory', description: 'Ship repeatable agent systems from secure, reusable building blocks.', code: ["import { Factory } from 'fentaris';", '', 'export const factory = new Factory({', "  template: 'secure-agent',", "  checks: ['policy', 'evals'],", '});'] },
-]
-
-const observabilityTabs = [
-  { id: 'evals', label: 'Evals', icon: '◉' },
-  { id: 'metrics', label: 'Metrics', icon: '⌁' },
-  { id: 'datasets', label: 'Datasets', icon: '▤' },
-  { id: 'traces', label: 'Traces', icon: '☷' },
-  { id: 'signals', label: 'Signals', icon: '◉' },
+  { id: 'servers', label: 'Servers', icon: '⟳', title: 'Servers', description: 'Add local or remote MCP servers without changing the endpoint your clients use.', code: ["import { fentaris, stdio } from '@fentaris/core';", '', 'const app = fentaris();', "app.mcp('filesystem', {", '  transport: stdio({', "    command: 'npx',", '  }),', '});'] },
+  { id: 'routing', label: 'Routing', icon: '⌘', title: 'Routing', description: 'Give every upstream a stable namespace and expose them all through one MCP endpoint.', code: ["app.mcp('github', {", '  transport: stdio({', "    command: 'npx',", "    args: ['-y', '@modelcontextprotocol/server-github'],", '  }),', '});', '', "// github__list_issues"] },
+  { id: 'policies', label: 'Policies', icon: '◇', title: 'Policies', description: 'Decide which tools each user or group can discover and call before execution.', code: ["app.policy('read-only')", "  .mcp('filesystem')", "  .allow('list_directory');", '', "app.group('operators')", "  .policy('read-only');"] },
+  { id: 'identity', label: 'Identity', icon: '◔', title: 'Identity', description: 'Authenticate MCP clients with API keys and resolve every request to an identity.', code: ["app.group('operators')", "  .users(user('alice', {", "    email: 'alice@example.com',", '  }))', "  .policy('read-only');"] },
+  { id: 'auth', label: 'OAuth', icon: '✣', title: 'OAuth', description: 'Connect protected remote MCP servers while Fentaris handles OAuth 2.1 credentials.', code: ["app.mcp('linear', {", '  transport: streamableHttp({', "    url: 'https://mcp.linear.app/mcp',", '  }),', '  auth: oauth(),', '});'] },
+  { id: 'events', label: 'Observe', icon: '⌁', title: 'Observe', description: 'Trace every proxied operation with lifecycle events, request context, and duration.', code: ["app.on('tool:success', ({ ctx, durationMs }) => {", "  ctx.log.info('tool.success', {", '    tool: ctx.tool?.name,', '    durationMs,', '  });', '});'] },
 ]
 
 function ShowcaseCode({ lines, label }: { lines: string[]; label: string }) {
@@ -147,9 +114,9 @@ function Platform() {
   } as CSSProperties
 
   return <section className="platform platform-v2" id="platform">
-    <h2><b>Agents. Workflows. Memory. Harness.</b> Fentaris gives<br />agents the secure tools they need to move fast.</h2>
+    <h2><b>Servers. Routing. Policy. Identity.</b> Everything you need<br />to operate MCP as production infrastructure.</h2>
     <div className="showcase-shell product-showcase" data-active-index={activeIndex} style={bridgeStyle}>
-      <div className="showcase-tabs" role="tablist" aria-label="Agent platform features">
+      <div className="showcase-tabs" role="tablist" aria-label="MCP control plane features">
         <i className="showcase-tab-bridge" aria-hidden="true" />
         {showcaseTabs.map(tab => <button key={tab.id} role="tab" aria-selected={active.id === tab.id} className={active.id === tab.id ? 'active' : ''} onClick={() => setActiveId(tab.id)}><span>{tab.icon}</span>{tab.label}</button>)}
       </div>
@@ -158,8 +125,8 @@ function Platform() {
           <div className="stage-glow" />
           <ShowcaseCode lines={active.code} label={active.title} />
           <div className="studio-card">
-            <div className="studio-toolbar"><span className="selected">▢ Chat</span><span>⚙ Editor</span><span>⚗ Evaluate</span><span>✎ Review</span><b>Agents&nbsp; / &nbsp;Schema Validated</b></div>
-            <div className="studio-body"><aside><b>＋ New Chat</b><strong>{active.title} workspace</strong><span>Policy review</span><span>Tool access</span></aside><main><small>Fentaris / {active.title}</small><p>Access checked. I can safely continue with the approved tools and policy.</p><div className="validation"><span>Policy validated</span><em>2 tools allowed</em></div></main></div>
+            <div className="studio-toolbar"><span className="selected">▣ Requests</span><span>⚙ Servers</span><span>◇ Policies</span><span>⌁ Events</span><b>Control plane&nbsp; / &nbsp;Live</b></div>
+            <div className="studio-body"><aside><b>＋ Add server</b><strong>{active.title}</strong><span>github · healthy</span><span>notion · healthy</span><span>filesystem · local</span></aside><main><small>Fentaris / {active.title}</small><p>Request authenticated, checked against policy, and routed to the approved upstream.</p><div className="validation"><span>github__list_issues</span><em>allowed · 184ms</em></div></main></div>
           </div>
           <div className="stage-caption"><b>{active.title}</b><span>{active.description}</span></div>
         </div>
@@ -168,32 +135,39 @@ function Platform() {
   </section>
 }
 
-function EvaluationMatrix() {
-  return <div className="eval-console">
-    <div className="eval-toolbar"><span>▣ Last 24 hours</span><span>☰ Add filter</span><b>Experiments&nbsp; / &nbsp;Research Agent Evaluation Suite</b></div>
-    <div className="eval-console-body"><aside><b>Comparisons</b><strong>✣ Research Agent</strong><b>Prompt</b><span>▢ v3-edited</span><b>Dataset</b><span>▤ policy-data</span><b>Scorers</b><span>▣ policy-checker</span></aside>
-      <div className="matrix"><div className="matrix-row matrix-head"><span></span><span>Name</span><span>Input</span><span>Output</span><span>Expected</span><span>Tags</span></div><div className="matrix-row failed"><span>1&nbsp; ◉</span><span>eval</span><span>Enter location for weather…</span><span>Today's forecast: Expect sun…</span><span>492631</span><span>—</span></div><div className="matrix-row failed"><span>1&nbsp; ◉</span><span>eval</span><span>Provide city or ZIP code</span><span>Rain showers are likely…</span><span>835279</span><span>—</span></div><div className="matrix-row"><span>1&nbsp; ◌</span><span>eval</span><span>Specify the location…</span><span>Mild temperatures…</span><span>948362</span><span>—</span></div><div className="matrix-row"><span>1&nbsp; ◌</span><span>eval</span><span>Enter the name of the city…</span><span>Heavy snowfall predicted…</span><span>517834</span><span>—</span></div><div className="matrix-row failed"><span>1&nbsp; ◉</span><span>eval</span><span>Type your area or region</span><span>A chilly evening ahead…</span><span>174958</span><span>—</span></div></div>
-    </div>
-  </div>
-}
+const flowSteps = [
+  { label: 'Connect', title: 'The client calls one endpoint.', copy: 'Claude, Codex, or your own app connects to Fentaris instead of configuring every MCP server separately.', event: 'POST /mcp · tools/call', result: 'client identified' },
+  { label: 'Control', title: 'Fentaris checks and routes.', copy: 'Identity, policy, middleware, approvals, and rate limits run before the request reaches an upstream server.', event: 'github__list_issues', result: 'policy allowed' },
+  { label: 'Run', title: 'The MCP server does its job.', copy: 'Fentaris supplies upstream authentication, forwards the call, and records the result before returning it to the client.', event: 'tool.success · 184ms', result: 'response returned' },
+]
 
-function DatasetPanel() {
-  return <div className="dataset-console">
-    <div className="dataset-breadcrumb">Datasets&nbsp; / &nbsp;<b>Research Agent Evaluation Suite</b></div>
-    <div className="dataset-summary"><h3>▤ &nbsp;Research Agent Evaluation Suite</h3><p>Curated test cases covering access checks, policy decisions, tool permissions, and secure agent workflows.</p><small>◴ &nbsp;Created Sep 16, 2026</small><small>▣ &nbsp;Latest version v1</small><div><span>Items&nbsp; <b>20</b></span><span>Experiments&nbsp; <b>20</b></span><span>Review</span></div></div>
-    <div className="dataset-search">Search… &nbsp;&nbsp;⌕</div>
-    <div className="dataset-table"><div><span>Id</span><span>Input</span><span>Ground Truth</span><span>Created</span></div><div><span>cc92b4a7</span><span>{'{"query":"Can this agent send email?"}'}</span><span>{'{"allowed":true,"policy":"review"…}'}</span><span>Today</span></div><div><span>ef193cd5</span><span>{'{"query":"Read a private credential"}'}</span><span>{'{"allowed":false,"reason":"secret"…}'}</span><span>Today</span></div></div>
-  </div>
-}
+function HowItWorks() {
+  const [activeStep, setActiveStep] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  useEffect(() => {
+    if (!isPlaying) return
+    const timer = window.setInterval(() => setActiveStep(step => (step + 1) % flowSteps.length), 3600)
+    return () => window.clearInterval(timer)
+  }, [isPlaying])
+  const active = flowSteps[activeStep]
 
-function Observability() {
-  const [active, setActive] = useState('evals')
-  const current = observabilityTabs.find(tab => tab.id === active) ?? observabilityTabs[0]
-  return <section className="observability observability-v2">
-    <h2><b>Security and observability, built in.</b> Always see exactly<br />what your agents are doing.</h2>
-    <div className="showcase-shell eval-showcase">
-      <div className="showcase-tabs" role="tablist" aria-label="Observability features">{observabilityTabs.map(tab => <button key={tab.id} role="tab" aria-selected={active === tab.id} className={active === tab.id ? 'active' : ''} onClick={() => setActive(tab.id)}><span>{tab.icon}</span>{tab.label}</button>)}</div>
-      <div className="eval-stage" role="tabpanel">{active === 'datasets' ? <DatasetPanel /> : <EvaluationMatrix />}<div className="stage-caption"><b>{current.label}</b><span>{active === 'datasets' ? 'Capture production traces as repeatable evaluation datasets.' : 'Validate agent behavior before it reaches production.'}</span></div></div>
+  return <section className="mcp-flow" id="how-it-works">
+    <h2><b>One endpoint in. The right server out.</b><br />See what happens to every MCP request.</h2>
+    <div className="flow-shell" data-step={activeStep}>
+      <div className="flow-tabs" role="tablist" aria-label="How an MCP request moves through Fentaris">
+        {flowSteps.map((step, index) => <button key={step.label} role="tab" aria-selected={activeStep === index} className={activeStep === index ? 'active' : ''} onClick={() => setActiveStep(index)}><i>0{index + 1}</i><span>{step.label}</span><em /></button>)}
+      </div>
+      <div className="flow-stage">
+        <button className="flow-pause" onClick={() => setIsPlaying(playing => !playing)} aria-label={isPlaying ? 'Pause request demo' : 'Play request demo'}>{isPlaying ? 'Ⅱ Pause' : '▶ Play'}</button>
+        <div className="flow-topology" aria-label="MCP clients connect through Fentaris to upstream MCP servers">
+          <div className="flow-column flow-clients"><small>MCP clients</small><span>Claude Desktop</span><span>Codex</span><span>Your app</span></div>
+          <div className="flow-wire wire-in"><i /></div>
+          <div className="flow-core"><Logo /><strong>fentaris</strong><small>ONE /MCP ENDPOINT</small><ul><li>Identity</li><li>Policy</li><li>Routing</li><li>Logs</li></ul></div>
+          <div className="flow-wire wire-out"><i /></div>
+          <div className="flow-column flow-servers"><small>MCP servers</small><span>GitHub <i>HTTP</i></span><span>Linear <i>OAuth</i></span><span>Filesystem <i>stdio</i></span></div>
+        </div>
+        <div className="flow-detail" aria-live="polite"><small>Step 0{activeStep + 1}</small><h3>{active.title}</h3><p>{active.copy}</p><div><code>{active.event}</code><span>✓ {active.result}</span></div></div>
+      </div>
     </div>
   </section>
 }
@@ -360,7 +334,7 @@ function Landing2Page() {
 }
 
 function Footer() {
-  return <footer><a className="brand" href="#top"><Logo /><b>fentaris</b></a><p>Secure infrastructure for AI agents.</p><span>© 2026 Fentaris</span></footer>
+  return <footer><a className="brand" href="#top"><Logo /><b>fentaris</b></a><p>The control plane for your MCP servers.</p><span>© 2026 Fentaris</span></footer>
 }
 
 function App() {
@@ -373,7 +347,7 @@ function App() {
   if (route === 'landing2') return <main><Landing2Page /></main>
   if (route === 'product') return <main><Header /><ProductPage /><Footer /></main>
   if (route === 'pricing') return <main><Header /><PricingPage /><Footer /></main>
-  return <main><Header /><Hero /><Platform /><Observability /><Footer /></main>
+  return <main><Header /><Hero /><Platform /><HowItWorks /><Footer /></main>
 }
 
 export default App
