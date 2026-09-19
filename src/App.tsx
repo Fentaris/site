@@ -13,7 +13,7 @@ const Github = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .7A11.5 11.5 0 0 0 8.36 23.1c.58.1.79-.25.79-.56v-2.23c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.58-.3-5.29-1.3-5.29-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18A10.9 10.9 0 0 1 12 6.12c.98 0 1.96.13 2.88.39 2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.4-2.72 5.38-5.3 5.67.42.36.79 1.06.79 2.14v3.26c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z" /></svg>
 )
 
-const Logo = () => <span className="logo" aria-hidden="true"><i /><i /><i /></span>
+const Logo = () => <span className="logo" aria-hidden="true"><img src="/logo-white.png" alt="" /></span>
 
 const CodeIcon = ({ children }: { children: React.ReactNode }) => <span className="tool-icon">{children}</span>
 
@@ -40,61 +40,405 @@ function Header() {
   return <>
     <header className="topbar">
       <div className="nav-shell">
-        <a className="brand" href="#top" aria-label="Fentaris home"><Logo /><b>fentaris</b></a>
+        <a className="brand" href="/" aria-label="Fentaris home"><Logo /><b>fentaris</b></a>
         <nav aria-label="Main navigation">
-          <a href="#/product">Product</a><a href="#/pricing">Pricing</a><a href="https://fentaris.mintlify.app">Docs</a>
+          <a href="/product">Product</a><a href="/pricing">Pricing</a><a href="https://fentaris.mintlify.app">Docs</a>
         </nav>
         <div className="nav-actions">
-          <a className="github-count" href="https://github.com/fentaris"><Github /><b>GitHub</b></a>
+          <a className="github-count" href="https://github.com/fentaris/fentaris"><Github /><b>GitHub</b></a>
         </div>
       </div>
     </header>
   </>
 }
 
+const heroScenes = [
+  {
+    request: "github.list_issues",
+    lines: [
+      ['client: api-key authenticated', 'green'],
+      ['policy: tool allowed', 'purple'],
+      ['route: github upstream', 'short'],
+      ['event: tool.success · 184ms', 'amber'],
+    ],
+    complete: 'request completed',
+    endpoint: 'one stable /mcp endpoint',
+    items: [['↳', 'github'], ['↳', 'notion'], ['↳', 'filesystem'], ['≋', 'policies'], ['⌁', 'request logs']],
+  },
+  {
+    request: "filesystem.write_file",
+    lines: [
+      ['identity: codex resolved', 'green'],
+      ['policy: approval required', 'purple'],
+      ['approval: operator granted', 'short'],
+      ['event: tool.success · 241ms', 'amber'],
+    ],
+    complete: 'approved and executed',
+    endpoint: 'policy enforced before execution',
+    items: [['◉', 'codex agent'], ['◇', 'write policy'], ['✓', 'human approval'], ['↳', 'filesystem'], ['⌁', 'audit event']],
+  },
+  {
+    request: "linear.create_issue",
+    lines: [
+      ['client: alice authenticated', 'green'],
+      ['oauth: token refreshed', 'purple'],
+      ['route: linear remote mcp', 'short'],
+      ['event: tool.success · 126ms', 'amber'],
+    ],
+    complete: 'trace recorded',
+    endpoint: 'every action stays observable',
+    items: [['◔', 'alice'], ['⌘', 'linear'], ['✣', 'managed OAuth'], ['↗', 'remote server'], ['⌁', 'complete trace']],
+  },
+] as const
+
 function AgentVisual() {
-  return <div className="hero-visual" aria-label="Fentaris MCP request preview">
-    <div className="trace-card">
-      <div className="trace-title">mcp request: 'github.list_issues'</div>
-      <div className="trace-line"><span>client: api-key authenticated</span><em className="bar green" /></div>
-      <div className="trace-line"><span>policy: tool allowed</span><em className="bar purple" /></div>
-      <div className="trace-line"><span>route: github upstream</span><em className="bar short" /></div>
-      <div className="trace-line"><span>event: tool.success · 184ms</span><em className="bar amber" /></div>
+  const [sceneIndex, setSceneIndex] = useState(0)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const timer = window.setInterval(() => setSceneIndex(index => (index + 1) % heroScenes.length), 5600)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const scene = heroScenes[sceneIndex]
+
+  return <div className="hero-visual" aria-label="Live Fentaris MCP request preview">
+    <div className="trace-card" key={`trace-${scene.request}`}>
+      <div className="trace-scan" aria-hidden="true" />
+      <div className="trace-title"><span>mcp request: '{scene.request}'</span><small><i /> live</small></div>
+      <div className="trace-runner" aria-hidden="true"><i /></div>
+      {scene.lines.map(([label, bar], index) => <div className="trace-line" style={{ '--trace-delay': `${index * .8}s` } as CSSProperties} key={label}><span>{label}</span><em className={`bar ${bar}`} /></div>)}
+      <div className="trace-complete"><i /> {scene.complete}</div>
     </div>
-    <div className="project-card"><small>one stable /mcp endpoint</small><span><CodeIcon>↳</CodeIcon>github</span><span><CodeIcon>↳</CodeIcon>notion</span><span><CodeIcon>↳</CodeIcon>filesystem</span><span><CodeIcon>≋</CodeIcon>policies</span><span><CodeIcon>⌁</CodeIcon>request logs</span></div>
+    <div className="project-card" key={`project-${scene.request}`}>
+      <small>{scene.endpoint} <i /></small>
+      {scene.items.map(([icon, label]) => <span key={label}><CodeIcon>{icon}</CodeIcon>{label}</span>)}
+      <div className="project-cycle" aria-hidden="true">{heroScenes.map((item, index) => <i className={index === sceneIndex ? 'active' : ''} key={item.request} />)}</div>
+    </div>
   </div>
+}
+
+function IntegrationMarquee() {
+  return <section className="integrations" id="integrations" aria-labelledby="integrations-title">
+    <p id="integrations-title">Connect any tool to any agent</p>
+    <div className="integration-marquee">
+      <div className="integration-track">
+        {[false, true].map((duplicate) => (
+          <ul className="integration-list" aria-hidden={duplicate || undefined} key={String(duplicate)}>
+            {integrations.map(({ name, icon }) => (
+              <li key={name} title={name}><img src={`${icon}?v=2`} alt={`${name} logo`} /></li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </div>
+  </section>
 }
 
 function Hero() {
   const [copied, setCopied] = useState(false)
-  const copy = async () => { await navigator.clipboard.writeText('npm install -g @fentaris/cli'); setCopied(true); setTimeout(() => setCopied(false), 1600) }
+  const copyResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (copyResetTimer.current) clearTimeout(copyResetTimer.current)
+  }, [])
+
+  const copy = async () => {
+    if (copyResetTimer.current) clearTimeout(copyResetTimer.current)
+    setCopied(true)
+
+    try {
+      await navigator.clipboard.writeText(`Set up Fentaris completely on this computer with a hassle-free experience.
+
+Act autonomously: detect the operating system, inspect the environment, install anything missing, create a working Fentaris proxy, import the MCPs already configured in the installed AI clients—only after my confirmation—configure the selected clients, and validate the result end to end.
+
+Use only official Fentaris documentation, packages, and repositories:
+- npm CLI: @fentaris/cli
+- skills: https://github.com/Fentaris/fentaris-skills
+- documentation: https://fentaris.mintlify.app
+
+Do not merely explain the commands: run them yourself when you have access to the terminal and files. If your interface provides interactive dialogs, AskUserQuestion, ask_user, or equivalent tools, use them for decisions that require my consent. Ask only one focused question at a time. If you do not have an interactive interface, ask me for the same decision with a brief text question.
+
+FINAL OBJECTIVE
+
+When finished, the following must exist:
+
+1. a supported version of Node.js, preferably Node 24 LTS, and npm;
+2. the official Fentaris CLI installed;
+3. all official Fentaris skills installed for the AI clients I select;
+4. a local Fentaris proxy project, preferably in ~/fentaris-proxy;
+5. the MCPs I approve centralized behind the proxy;
+6. the selected AI clients configured to use a single Fentaris endpoint;
+7. credentials and tokens stored securely;
+8. static and runtime checks completed successfully;
+9. backups of modified configurations and rollback instructions.
+
+SECURITY RULES
+
+- Do not delete, overwrite, or disable existing configurations without confirmation.
+- Before modifying a client configuration, create a timestamped backup with appropriate permissions.
+- Never print tokens, passwords, API keys, client secrets, or credential values.
+- Do not copy secrets found in configurations directly into code, the prompt, logs, or the final report.
+- Use stdin, secret storage, or Fentaris encrypted commands when available.
+- Do not pass secrets as shell arguments.
+- Do not install software with administrative privileges without asking for confirmation when the operating system requires it.
+- Do not expose the proxy on the network: keep it on 127.0.0.1 unless I explicitly choose otherwise.
+- Do not replace the original MCPs in clients until the Fentaris proxy has been validated.
+- Avoid destructive changes. Every step must be reversible.
+- Do not invent commands or options: always check the installed version and its --help output.
+
+PHASE 1 — SILENT INVENTORY
+
+Without modifying anything:
+
+1. detect the operating system, architecture, and shell;
+2. check the presence and version of:
+   - Node.js;
+   - npm, pnpm, and bun;
+   - Git;
+   - Fentaris CLI;
+   - npx skills;
+3. identify installed AI clients or agents, for example:
+   - Codex;
+   - Claude Code and Claude Desktop;
+   - Cursor;
+   - Gemini CLI;
+   - OpenCode;
+   - other MCP-compatible clients;
+4. locate their MCP configurations, both global and in accessible workspaces;
+5. locate installed skills and agent/persona definitions;
+6. build a redacted inventory showing only:
+   - client name;
+   - configuration path;
+   - MCP names;
+   - transport type: stdio, Streamable HTTP, or SSE;
+   - presence of credentials, without showing their values;
+   - presence of agent definitions or skills.
+
+Do not modify any files yet.
+
+PHASE 2 — INTERACTIVE SELECTION
+
+Show me a very brief inventory summary and ask me, using multiple selection if available:
+
+“Which clients do you want to integrate with Fentaris?”
+
+Offer only the clients actually detected, plus:
+- all detected clients;
+- only the current client;
+- none, configure only Fentaris.
+
+Then ask me which MCPs to import. Show the name, source client, and transport, but not the credentials.
+
+If you find agent/persona definitions, briefly explain that Fentaris centralizes MCPs, identity, policies, and credentials, but does not replace the client's agent system. Ask whether I want to:
+
+- leave the agents where they are and install only the Fentaris skills;
+- install the Fentaris skills and configure those agents to use the proxy;
+- make no changes to the agents.
+
+Do not promise to “import agents into Fentaris” unless an official feature supports it.
+
+PHASE 3 — INSTALLATION
+
+After my confirmation:
+
+1. install a supported version of Node.js if it is missing;
+2. check \`node --version\` and \`npm --version\` again;
+3. install or update the official CLI:
+
+   npm install -g @fentaris/cli
+
+4. verify:
+
+   fentaris --version
+   fentaris --help
+
+5. install all official Fentaris skills for each selected client using the explicit target supported by \`npx skills\`, for example:
+
+   npx skills add Fentaris/fentaris-skills -g -a <agent> --skill '*'
+
+   First check the targets and options actually available with \`--help\` or \`--list\`. Do not use \`--all\` without my consent.
+
+6. If a client must be restarted to load the skills, continue the setup using the official documentation and CLI anyway. Report the restart as the final action, not as a reason to stop working.
+
+PHASE 4 — PROJECT CREATION
+
+If a suitable Fentaris project does not already exist:
+
+1. propose these defaults:
+   - directory: ~/fentaris-proxy;
+   - package manager: npm, or the one already available and preferred in the environment;
+   - host: 127.0.0.1;
+   - port: 4000, or the first available port;
+   - endpoint: /mcp;
+2. first check the options with:
+
+   fentaris init --help
+
+3. generate the project with explicit, non-interactive options;
+4. do not build the scaffold manually if the CLI can generate it;
+5. inspect the generated files before modifying them;
+6. keep \`fentaris.json\` as the source of truth for the host, port, path, entry point, and auth directory.
+
+If you detect an existing Fentaris project, ask whether I want to use it or create a new one.
+
+PHASE 5 — IMPORTING MCPS
+
+For each approved MCP:
+
+1. preserve its name, command, arguments, URL, and transport when compatible;
+2. use the high-level Fentaris APIs:
+   - \`app.mcp(...)\` or \`mcp(...)\`;
+   - \`stdio(...)\`;
+   - \`streamableHttp(...)\`;
+   - \`sse(...)\`, when supported;
+3. use stable, unique names because they become tool prefixes;
+4. do not use wrappers such as \`sh -lc\` if the command can be declared directly;
+5. do not automatically import broken, duplicate, or unrecognized servers: report them and ask for confirmation;
+6. do not put secret values in TypeScript or \`fentaris.json\`;
+7. transfer credentials only through a secure, approved path;
+8. if a secret value cannot be migrated without displaying it or reading it in plain text, ask me to re-enter it through protected input or leave that integration pending.
+
+Use the official Fentaris commands for credentials and secrets. Prefer:
+
+- \`fentaris secrets setup --dry-run --json\`;
+- \`fentaris secrets setup --yes --json\`;
+- \`fentaris secrets set <reference> --value-stdin\`;
+- \`FENTARIS_AUTH_KEY\` or the mechanism generated by the project.
+
+Do not print secret contents.
+
+PHASE 6 — OAUTH 2.1
+
+Clearly distinguish between:
+
+A. client authentication to Fentaris;
+B. Fentaris authentication to upstream MCPs.
+
+For upstream Streamable HTTP or SSE MCPs that are protected by OAuth 2.1, ask me individually whether I want to configure OAuth.
+
+If I confirm:
+
+1. use the official \`oauth()\` API and current Fentaris documentation;
+2. prefer OAuth Authorization Code with PKCE and per-user tokens;
+3. use preregistered clients or client credentials only when required by the provider;
+4. store tokens and registrations in Fentaris encrypted storage;
+5. verify that a persistent encryption key exists;
+6. start login with the official command supported by the installed version, for example:
+
+   fentaris auth login <mcp> --as user:<user>
+
+7. let me complete consent and login in the browser;
+8. do not attempt \`oauth()\` for a stdio MCP because that transport cannot carry OAuth authorization;
+9. if the environment is headless, use the documented mode to print or present the URL without exposing tokens.
+
+Do not confuse upstream OAuth with client access to the proxy. For local proxy access, use Fentaris API keys or a supported authentication boundary when required.
+
+PHASE 7 — IDENTITY AND POLICIES
+
+Ask whether I want:
+
+- personal local mode;
+- a Fentaris API key;
+- separate users and groups;
+- allow-list policies.
+
+Keep the setup minimal for a personal, local configuration.
+
+If I enable an API key:
+
+1. use \`fentaris auth api-key\`;
+2. prefer generation through the CLI;
+3. show the key only once through the available secure channel;
+4. do not save it in logs;
+5. configure clients with \`x-fentaris-api-key\` through their secret storage, if supported.
+
+Do not leave an \`allowAll\` policy in place before exposing the proxy outside localhost.
+
+PHASE 8 — VALIDATION BEFORE MIGRATION
+
+Perform at least:
+
+1. installation of the project dependencies;
+2. the available build or typecheck;
+3. \`fentaris check --offline --json\`;
+4. \`fentaris doctor --json\`;
+5. a controlled proxy start;
+6. \`fentaris doctor --runtime --json\`;
+7. MCP initialization and \`tools/list\`;
+8. verification that each approved upstream exposes the expected tools;
+9. for OAuth, \`fentaris auth status\` without showing tokens;
+10. at least one non-destructive call to a safe tool, when possible.
+
+If a check fails, diagnose and fix the cause. Do not modify the clients' original configurations while the runtime is unhealthy.
+
+PHASE 9 — CLIENT CONFIGURATION
+
+Only after validation succeeds:
+
+1. create a backup of each selected client's configuration;
+2. add an MCP server named \`fentaris\` that points to the validated local endpoint, normally:
+
+   http://127.0.0.1:4000/mcp
+
+3. add the \`x-fentaris-api-key\` header only if configured and through a secure mechanism;
+4. verify that the format is correct for the client version;
+5. do not remove the original MCPs immediately;
+6. verify the connection from the client when technically possible;
+7. finally ask whether I want to:
+   - disable the original MCPs that have now been migrated;
+   - remove them while keeping the backup;
+   - leave them unchanged.
+
+Apply the choice without touching unrelated configurations.
+
+PHASE 10 — PERSISTENT STARTUP
+
+Ask whether I want Fentaris to:
+
+- be started manually;
+- start automatically at login;
+- run through an existing process manager.
+
+Do not create system services or scheduled tasks without consent. If I choose automatic startup, use the least invasive native mechanism and also create uninstall instructions.
+
+FINAL RESULT
+
+Conclude with a brief report containing:
+
+- installed versions;
+- project directory;
+- Fentaris endpoint;
+- configured clients;
+- imported MCPs;
+- skipped MCPs or ones still to be completed;
+- configured authentication and policies;
+- OAuth status for each upstream, without tokens;
+- installed skills and clients that must be restarted;
+- validations performed and their outcomes;
+- backup paths;
+- how to start and stop Fentaris;
+- how to restore the previous configurations.
+
+Do not claim that the setup is complete unless the build, checks, runtime, and client connection have been verified. If you are blocked, stop and state exactly which check failed, what you have already tried, and the single input or permission required to continue.`)
+      copyResetTimer.current = setTimeout(() => setCopied(false), 1800)
+    } catch {
+      setCopied(false)
+    }
+  }
+
   return <>
     <section className="hero" id="top">
       <div className="hero-shell">
         <div className="hero-copy">
           <h1>Manage every MCP</h1>
           <p>Run, route, and manage every MCP server behind <span>one stable endpoint</span>—with authentication, policy, and observability built in</p>
-          <div className="hero-links" id="setup"><button onClick={copy}>{copied ? 'Command copied' : 'Copy install command'}</button><a href="https://fentaris.mintlify.app/getting-started/quickstart">Quickstart <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></a></div>
+          <div className="hero-links" id="setup"><button className={`copy-prompt-button${copied ? ' is-copied' : ''}`} onClick={copy} aria-label={copied ? 'Agent prompt copied' : 'Copy agent prompt'}><span>{copied ? 'Copied' : 'Copy agent prompt'}</span><span className="copy-prompt-icon" aria-hidden="true">{copied ? <svg viewBox="0 0 16 16"><path d="m3 8.2 3.1 3.1L13 4.8" /></svg> : <svg viewBox="0 0 16 16"><rect x="5.2" y="5.2" width="7.3" height="7.3" rx="1.4" /><path d="M10.5 5.2V4.8c0-.7-.6-1.3-1.3-1.3H4.8c-.7 0-1.3.6-1.3 1.3v4.4c0 .7.6 1.3 1.3 1.3h.4" /></svg>}</span></button><a href="https://fentaris.mintlify.app/getting-started/quickstart">Quickstart <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></a></div>
         </div>
         <AgentVisual />
       </div>
     </section>
-    <section className="integrations" id="integrations" aria-labelledby="integrations-title">
-      <p id="integrations-title">Bring every tool behind one MCP endpoint</p>
-      <div className="integration-marquee">
-        <div className="integration-track">
-          {[false, true].map((duplicate) => (
-            <ul className="integration-list" aria-hidden={duplicate || undefined} key={String(duplicate)}>
-              {integrations.map(({ name, icon }) => (
-                <li key={name} title={name}>
-                  <img src={`${icon}?v=2`} alt={`${name} logo`} />
-                </li>
-              ))}
-            </ul>
-          ))}
-        </div>
-      </div>
-    </section>
+    <IntegrationMarquee />
   </>
 }
 
@@ -284,27 +628,27 @@ function FaqSection() {
   return <section className="faq-section"><div className="faq-shell"><div><h2>Common questions<br /></h2></div><div className="faq-list">{faqs.map(([question, answer], index) => <details key={question} open={index === 0}><summary>{question}<span>＋</span></summary><p>{answer}</p></details>)}</div></div></section>
 }
 
-function HomeCta() {
-  return <section className="home-cta"><div className="home-cta-glow" /><h2>One endpoint for every server.<br /><span>One place to stay in control.</span></h2><div><a className="cta-primary" href="https://fentaris.mintlify.app/getting-started/quickstart">Build your first proxy <Arrow /></a><a className="cta-secondary" href="https://github.com/Fentaris/fentaris"><Github /> View on GitHub</a></div></section>
+function HomeCta({ title = <>One endpoint for every server.<br /><span>One place to stay in control.</span></> }: { title?: React.ReactNode }) {
+  return <section className="home-cta"><div className="home-cta-glow" /><h2>{title}</h2><div><a className="cta-primary" href="https://fentaris.mintlify.app/getting-started/quickstart">Build your first proxy <Arrow /></a><a className="cta-secondary" href="https://github.com/Fentaris/fentaris"><Github /> View on GitHub</a></div></section>
 }
 
 type Route = 'home' | 'product' | 'pricing' | 'landing2'
 
 function getRoute(): Route {
-  const hash = window.location.hash
-  if (window.location.pathname.startsWith('/landing2') || hash.startsWith('#/landing2')) return 'landing2'
-  if (hash.startsWith('#/product')) return 'product'
-  if (hash.startsWith('#/pricing')) return 'pricing'
+  const { pathname, hash } = window.location
+  if (pathname.startsWith('/landing2') || hash.startsWith('#/landing2')) return 'landing2'
+  if (pathname.startsWith('/product') || hash.startsWith('#/product')) return 'product'
+  if (pathname.startsWith('/pricing') || hash.startsWith('#/pricing')) return 'pricing'
   return 'home'
 }
 
 const productFeatures = [
-  ['01', 'Agents', 'Identity and least-privilege access for every agent.'],
-  ['02', 'Workflows', 'Approvals built into every sensitive step.'],
-  ['03', 'Tools', 'One secure gateway to every tool your agents use.'],
-  ['04', 'Policies', 'Rules enforced before actions reach production.'],
-  ['05', 'Memory', 'Useful context, isolated and under your control.'],
-  ['06', 'Observability', 'A complete trace of every decision and action.'],
+  ['01', 'Servers', 'Register local and remote MCP servers behind one stable endpoint.'],
+  ['02', 'Routing', 'Keep every tool namespaced and route each request to the right upstream.'],
+  ['03', 'Identity', 'Resolve every API key to a trusted user, agent, and group context.'],
+  ['04', 'Policies', 'Enforce least-privilege rules before an action can reach production.'],
+  ['05', 'OAuth', 'Connect protected upstreams without exposing credentials to application code.'],
+  ['06', 'Observability', 'Follow authentication, policy, execution, result, and latency in one trace.'],
 ]
 
 function PageHero({ eyebrow, title, copy, children }: { eyebrow: string; title: React.ReactNode; copy: string; children?: React.ReactNode }) {
@@ -318,66 +662,146 @@ function PageHero({ eyebrow, title, copy, children }: { eyebrow: string; title: 
   </section>
 }
 
+const productSections = [
+  {
+    id: 'gateway',
+    label: 'Gateway',
+    title: 'One endpoint for every MCP server.',
+    copy: 'Connect local and remote servers once. Every compatible client gets a stable, namespaced tool catalog without maintaining its own server configuration.',
+    feature: ['A shared gateway for your entire MCP stack', 'Register stdio and HTTP servers side by side, route every tool call to the right upstream, and change infrastructure without touching client configuration.'],
+    cards: [
+      ['⌘', 'Predictable routing', 'Namespace every tool by its server, so names remain stable and collisions disappear as your catalog grows. Clients always know which upstream will receive a request, even when several servers expose similar capabilities.'],
+      ['↗', 'Any transport', 'Run local stdio servers and remote Streamable HTTP servers behind the same endpoint. Fentaris handles each transport consistently, so clients do not need separate integrations or configuration.'],
+      ['⟳', 'Live registry', 'Inspect registered servers, their connection status, and available tools from one operational view. Changes become visible centrally, making it easier to understand what every connected client can use.'],
+      ['◇', 'Shared middleware', 'Apply validation, rate limits, approvals, and custom logic at the gateway instead of rebuilding them in every client. One shared pipeline keeps behavior consistent across your MCP environment.'],
+      ['＋', 'Simple expansion', 'Add, replace, or reorganize an upstream without reconfiguring every agent. The client-facing endpoint stays stable while your internal MCP infrastructure evolves behind it.'],
+      ['→', 'Native MCP', 'Preserve standard MCP initialization, discovery, and tool-call behavior from end to end. Existing compatible clients and servers continue to work without adopting a proprietary protocol.'],
+    ],
+  },
+  {
+    id: 'governance',
+    label: 'Governance',
+    title: 'Decide who can use what—before it runs.',
+    copy: 'Turn an incoming API key into trusted context, evaluate least-privilege policy, and keep upstream credentials outside clients, callbacks, and logs.',
+    feature: ['Policy at the shared boundary', 'Resolve users and groups for every request. Allow, deny, or require approval by MCP operation, server, and tool before the upstream sees the call.'],
+    cards: [
+      ['◔', 'Identity', 'Resolve every client request to a trusted user, agent, and group context before it reaches a tool. Policies can then make decisions using real organizational identity instead of anonymous connections.'],
+      ['✓', 'Tool approval', 'Pause sensitive actions until a human or an external system explicitly approves them. The request keeps its original identity and context, so reviewers can make an informed decision.'],
+      ['✣', 'Managed OAuth', 'Connect protected remote servers while Fentaris stores credentials and refreshes tokens centrally. Clients gain authorized access without receiving or managing upstream secrets themselves.'],
+      ['▣', 'Filtered discovery', 'Expose only the servers and tools that each identity is permitted to use. Clients receive a smaller, safer catalog and cannot discover capabilities that fall outside their policy.'],
+      ['●', 'Protected secrets', 'Keep credential values out of clients, middleware, policy code, and event payloads. Secrets remain confined to the component that needs them, reducing accidental exposure across the request path.'],
+      ['≋', 'Composable policies', 'Build clear rules around identities, operations, servers, and individual tools, then reuse them across teams and clients. Small policies can be combined without duplicating authorization logic.'],
+    ],
+  },
+  {
+    id: 'observability',
+    label: 'Observability',
+    title: 'Understand every request end to end.',
+    copy: 'Follow authentication, authorization, upstream execution, result, and duration in one trace so operators can answer what happened and why.',
+    feature: ['A complete MCP request timeline', 'See the caller, matched policy, selected upstream, lifecycle events, outcome, and latency together instead of piecing them across clients and servers.'],
+    cards: [
+      ['⌁', 'Lifecycle events', 'Subscribe to authentication, policy, execution, success, and failure events throughout every request. Use the same event stream for monitoring, automation, alerts, or custom operational workflows.'],
+      ['184', 'Latency', 'Measure how long each stage of a request takes, from gateway processing to upstream execution. Detailed timing makes slow servers and transport bottlenecks easier to identify.'],
+      ['!', 'Actionable failures', 'Connect denied and failed calls to the identity, policy rule, tool, and server involved. Operators get the context needed to diagnose the cause instead of searching across disconnected logs.'],
+      ['{ }', 'Structured logs', 'Send consistent request metadata and outcomes to the logging stack your team already uses. A predictable schema makes MCP activity easier to search, correlate, and monitor at scale.'],
+      ['↳', 'Upstream health', 'Distinguish gateway problems from transport errors and upstream server failures quickly. Clear boundaries help teams respond to the right component and reduce time spent debugging clients.'],
+      ['◎', 'Audit context', 'Retain the identities, policy decisions, selected upstreams, and outcomes needed to review production agent activity. Each record explains not only what ran, but why it was allowed.'],
+    ],
+  },
+]
+
+function ProductFeatureVisual({ type }: { type: string }) {
+  return <div className={`product-feature-visual visual-${type}`} aria-hidden="true">
+    <div className="feature-visual-bar"><span /><span /><span /><code>fentaris / {type}</code></div>
+    {type === 'gateway' && <div className="gateway-map"><div><small>CLIENTS</small><span>Claude</span><span>Codex</span><span>Cursor</span></div><i>→</i><strong><Logo /><b>one /mcp endpoint</b></strong><i>→</i><div><small>SERVERS</small><span>GitHub</span><span>Linear</span><span>Filesystem</span></div></div>}
+    {type === 'governance' && <div className="policy-preview"><div><small>REQUEST CONTEXT</small><b>alice@example.com</b><span>group: operators</span></div><div className="policy-result"><i>✓</i><span><small>POLICY DECISION</small><b>Allowed</b></span><code>2 ms</code></div><p>github__list_issues · matched github-read</p></div>}
+    {type === 'observability' && <div className="timeline-preview"><div><i /><code>00 ms</code><span><b>client.authenticated</b><small>alice resolved</small></span></div><div><i /><code>04 ms</code><span><b>policy.allowed</b><small>github-read</small></span></div><div><i /><code>06 ms</code><span><b>upstream.request</b><small>github · stdio</small></span></div><div><i /><code>184 ms</code><span><b>tool.success</b><small>response returned</small></span></div></div>}
+  </div>
+}
+
 function ProductPage() {
   return <>
-    <PageHero eyebrow="Fentaris platform" title={<>One secure layer.<br /><span>Every agent.</span></>} copy="Build, connect, and operate AI agents without giving up control.">
-      <div className="page-actions"><a className="primary-action" href="https://fentaris.mintlify.app">Start building <Arrow /></a><a className="text-action" href="#product-capabilities">Explore the platform ↓</a></div>
-      <div className="product-orbit" aria-label="Fentaris connects agents, policy, tools, and observability">
-        <div className="orbit-core"><Logo /><b>fentaris</b><small>secure runtime</small></div>
-        <span className="orbit-node node-agent">Agent</span><span className="orbit-node node-policy">Policy</span><span className="orbit-node node-tools">Tools</span><span className="orbit-node node-trace">Trace</span>
-      </div>
-    </PageHero>
-
-    <section className="page-section" id="product-capabilities">
-      <div className="page-shell">
-        <div className="section-heading"><p className="eyebrow">The platform</p><h2>Everything agents need.<br /><span>Nothing they shouldn't have.</span></h2></div>
-        <div className="feature-grid">{productFeatures.map(([number, title, copy]) => <article key={title}><small>{number}</small><h3>{title}</h3><p>{copy}</p></article>)}</div>
+    <section className="mastra-product-hero" id="top">
+      <div className="mastra-hero-inner">
+        <h1>Everything you need to run MCP as <em>production infrastructure.</em></h1>
+        <div><a className="mastra-prompt-action" href="https://github.com/Fentaris/fentaris"><Github /> View on GitHub</a><a className="mastra-quickstart" href="https://fentaris.mintlify.app/getting-started/quickstart">Quickstart <Arrow /></a></div>
       </div>
     </section>
 
-    <section className="page-section product-flow-section">
-      <div className="page-shell split-section">
-        <div className="section-heading"><p className="eyebrow">One control plane</p><h2>Connect.<br />Govern.<br /><span>Observe.</span></h2></div>
-        <div className="product-flow">
-          <div><i>01</i><b>Connect</b><span>Bring any agent and any tool.</span></div>
-          <div><i>02</i><b>Govern</b><span>Apply identity, permissions, and approvals.</span></div>
-          <div><i>03</i><b>Observe</b><span>See what happened and why.</span></div>
+    {productSections.map(section => <section className="mastra-feature-section" id={section.id} key={section.id}>
+      <div className="mastra-section-shell">
+        <header className="mastra-section-header"><h2>{section.label}</h2><p>{section.copy}</p></header>
+        <div className="mastra-feature-grid">
+          <a className="mastra-feature-card featured" href="https://fentaris.mintlify.app/concepts/architecture">
+            <div className="mastra-card-copy"><h3>{section.feature[0]}</h3><p>{section.feature[1]}</p><span>Explore {section.label.toLowerCase()} <Arrow /></span></div>
+            <ProductFeatureVisual type={section.id} />
+          </a>
+          {section.cards.map(([, title, copy]) => <article className="mastra-feature-card" key={title}><div><h3>{title}</h3><p>{copy}</p></div></article>)}
         </div>
       </div>
+    </section>)}
+
+    <section className="mastra-solutions-section" id="solutions">
+      <div className="mastra-section-shell">
+        <header className="mastra-section-header"><h2>Built for teams putting agents to work</h2><p>Use the same open foundation for coding agents, internal automations, or a company-wide MCP platform.</p></header>
+        <div className="mastra-solution-grid"><article><small>ENGINEERING TEAMS</small><h3>Production-safe tools for coding agents</h3><p>Share GitHub, Linear, and filesystem access without distributing unrestricted credentials to every developer and client.</p></article><article><small>INTERNAL AUTOMATION</small><h3>Govern workflows across business systems</h3><p>Keep identity, OAuth, and authorization consistent as agents move between support, knowledge, CRM, and collaboration tools.</p></article><article><small>PLATFORM TEAMS</small><h3>MCP as reliable internal infrastructure</h3><p>Give every team a stable tool catalog while operating transports, policy, credentials, and telemetry centrally.</p></article></div>
+      </div>
     </section>
 
-    <PageCta title="Build agents you can trust." label="Read the quickstart" href="https://fentaris.mintlify.app" />
+    <FaqSection />
+    <HomeCta title={<>Start with one endpoint.<br /><span>Stay in control as you scale.</span></>} />
   </>
 }
 
+const WAITLIST_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLScodsYk5yX27jxuwwjP4LFEq8hLnW71nWojWhGa6RI8ZWzR1A/formResponse'
+
 function PricingPage() {
-  return <>
-    <PageHero eyebrow="Simple pricing" title={<>Start open.<br /><span>Scale when you're ready.</span></>} copy="Self-host Fentaris for free. Move to managed infrastructure when you need it.">
-      <div className="pricing-signal"><span /><p>No per-agent tax. No locked-in tools.</p></div>
-    </PageHero>
+  const [email, setEmail] = useState('')
+  const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
 
-    <section className="page-section pricing-section">
-      <div className="page-shell pricing-grid">
-        <article className="price-card featured">
-          <div className="price-card-head"><p className="eyebrow">Open source</p><span>Available now</span></div>
-          <h2>$0<small> forever</small></h2>
-          <p>Run Fentaris on your own infrastructure.</p>
-          <ul><li>Unlimited agents</li><li>Policy enforcement</li><li>Audit logs</li><li>Community support</li></ul>
-          <a className="primary-action" href="https://github.com/fentaris">Get Fentaris <Arrow diagonal /></a>
-        </article>
-        <article className="price-card">
-          <div className="price-card-head"><p className="eyebrow">Fentaris Cloud</p><span>Coming soon</span></div>
-          <h2>Managed</h2>
-          <p>Secure agent infrastructure, without infrastructure work.</p>
-          <ul><li>Hosted control plane</li><li>Managed updates</li><li>Team workspaces</li><li>Priority support</li></ul>
-          <a className="secondary-action" href="https://github.com/fentaris">Follow updates <Arrow diagonal /></a>
-        </article>
+  const joinWaitlist = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setWaitlistStatus('submitting')
+
+    try {
+      await fetch(WAITLIST_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: new URLSearchParams({ 'entry.185426948': email }),
+      })
+      setEmail('')
+      setWaitlistStatus('success')
+    } catch {
+      setWaitlistStatus('error')
+    }
+  }
+
+  return <section className="cloud-page">
+    <div className="page-shell cloud-layout">
+      <div className="cloud-copy">
+        <h1>The simpler way to run Fentaris is <span>on its way.</span></h1>
+        <p className="cloud-lede">Fentaris Cloud will make it easier to deploy, manage, and monitor Fentaris—without taking on the infrastructure work yourself.</p>
+        <div className="cloud-status"><i aria-hidden="true" /><span><b>Currently in development</b>We’re building the first version now.</span></div>
       </div>
-    </section>
 
-    <section className="pricing-note"><div className="page-shell"><p>Both plans use the same open foundation.</p><span>Your agents. Your tools. Your data.</span></div></section>
-    <PageCta title="Secure your first agent today." label="View the docs" href="https://fentaris.mintlify.app" />
-  </>
+      <aside className="waitlist-card" aria-labelledby="waitlist-title">
+        <h2 id="waitlist-title">Join the waitlist.</h2>
+        <p>Be the first to know when Fentaris Cloud is ready.</p>
+        {waitlistStatus === 'success' ? (
+          <div className="waitlist-success" role="status"><span>✓</span><div><b>You’re on the list.</b><p>We’ll be in touch when Fentaris Cloud is ready.</p></div></div>
+        ) : (
+          <form className="waitlist-form" onSubmit={joinWaitlist}>
+            <label htmlFor="waitlist-email">Email address</label>
+            <div>
+              <input id="waitlist-email" name="email" type="email" autoComplete="email" placeholder="you@company.com" value={email} onChange={event => setEmail(event.target.value)} required />
+              <button type="submit" disabled={waitlistStatus === 'submitting'}>{waitlistStatus === 'submitting' ? 'Joining…' : 'Join waitlist'} <Arrow /></button>
+            </div>
+            {waitlistStatus === 'error' && <p className="waitlist-error" role="alert">Something went wrong. Please try again.</p>}
+          </form>
+        )}
+      </aside>
+    </div>
+  </section>
 }
 
 function PageCta({ title, label, href }: { title: string; label: string; href: string }) {
@@ -450,7 +874,7 @@ function Landing2Page() {
 }
 
 function Footer() {
-  return <footer className="site-footer"><div className="footer-main"><div className="footer-brand"><a className="brand" href="#top"><Logo /><b>fentaris</b></a><p>The open-source control plane for your MCP servers.</p><span>Run, route, manage, and observe MCP through one stable endpoint.</span></div><div className="footer-column"><b>Product</b><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#quickstart">Quickstart</a></div><div className="footer-column"><b>Resources</b><a href="https://fentaris.mintlify.app">Documentation</a><a href="https://fentaris.mintlify.app/concepts/architecture">Architecture</a><a href="https://fentaris.mintlify.app/getting-started/quickstart">Getting started</a></div><div className="footer-column"><b>Community</b><a href="https://github.com/Fentaris/fentaris">GitHub</a><a href="https://github.com/Fentaris/fentaris/issues">Issues</a><a href="https://github.com/Fentaris/fentaris/blob/main/LICENSE.txt">MIT License</a></div></div><div className="footer-bottom"><span>© 2026 Fentaris</span><span>Built for the Model Context Protocol.</span></div></footer>
+  return <footer className="site-footer"><div className="footer-main"><div className="footer-brand"><a className="brand" href="/"><Logo /><b>fentaris</b></a><p>The open-source control plane for your MCP servers.</p><span>Run, route, manage, and observe MCP through one stable endpoint.</span></div><div className="footer-column"><b>Product</b><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#quickstart">Quickstart</a></div><div className="footer-column"><b>Resources</b><a href="https://fentaris.mintlify.app">Documentation</a><a href="https://fentaris.mintlify.app/concepts/architecture">Architecture</a><a href="https://fentaris.mintlify.app/getting-started/quickstart">Getting started</a></div><div className="footer-column"><b>Community</b><a href="https://github.com/Fentaris/fentaris">GitHub</a><a href="https://github.com/Fentaris/fentaris/issues">Issues</a><a href="https://github.com/Fentaris/fentaris/blob/main/LICENSE.txt">MIT License</a></div></div><div className="footer-bottom"><span>© 2026 Fentaris</span></div></footer>
 }
 
 function App() {
