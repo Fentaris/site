@@ -148,279 +148,269 @@ function Hero() {
     setCopied(true)
 
     try {
-      await navigator.clipboard.writeText(`Set up Fentaris completely on this computer with a hassle-free experience.
-
-Act autonomously: detect the operating system, inspect the environment, install anything missing, create a working Fentaris proxy, import the MCPs already configured in the installed AI clients—only after my confirmation—configure the selected clients, and validate the result end to end.
+      await navigator.clipboard.writeText(`Set up Fentaris completely on this computer with a zero-hassle experience.
 
-Use only official Fentaris documentation, packages, and repositories:
-- npm CLI: @fentaris/cli
-- skills: https://github.com/Fentaris/fentaris-skills
-- documentation: https://fentaris.mintlify.app
+   Act autonomously: detect the operating system, inspect the environment, install missing prerequisites, install the official Fentaris CLI and skills, create a working local Fentaris proxy, offer to migrate existing MCP servers from the AI clients
+ already installed, configure the clients I select, and validate the result end to end.
 
-Do not merely explain the commands: run them yourself when you have access to the terminal and files. If your interface provides interactive dialogs, AskUserQuestion, ask_user, or equivalent tools, use them for decisions that require my consent. Ask only one focused question at a time. If you do not have an interactive interface, ask me for the same decision with a brief text question.
+   Use only official sources:
+   - CLI package: @fentaris/cli
+   - Skills: https://github.com/Fentaris/fentaris-skills
+   - Documentation: https://fentaris.mintlify.app
 
-FINAL OBJECTIVE
+   If $fentaris-machine-setup is already available, use it. Otherwise, follow this prompt as the setup contract.
 
-When finished, the following must exist:
+   Do not merely explain commands when you have terminal and file access: perform the work. Use an interactive question or dialog tool when available, ask one focused question at a time, and fall back to a short text question if no dialog tool exists.
 
-1. a supported version of Node.js, preferably Node 24 LTS, and npm;
-2. the official Fentaris CLI installed;
-3. all official Fentaris skills installed for the AI clients I select;
-4. a local Fentaris proxy project, preferably in ~/fentaris-proxy;
-5. the MCPs I approve centralized behind the proxy;
-6. the selected AI clients configured to use a single Fentaris endpoint;
-7. credentials and tokens stored securely;
-8. static and runtime checks completed successfully;
-9. backups of modified configurations and rollback instructions.
+   TARGET STATE
 
-SECURITY RULES
+   The completed setup must include:
 
-- Do not delete, overwrite, or disable existing configurations without confirmation.
-- Before modifying a client configuration, create a timestamped backup with appropriate permissions.
-- Never print tokens, passwords, API keys, client secrets, or credential values.
-- Do not copy secrets found in configurations directly into code, the prompt, logs, or the final report.
-- Use stdin, secret storage, or Fentaris encrypted commands when available.
-- Do not pass secrets as shell arguments.
-- Do not install software with administrative privileges without asking for confirmation when the operating system requires it.
-- Do not expose the proxy on the network: keep it on 127.0.0.1 unless I explicitly choose otherwise.
-- Do not replace the original MCPs in clients until the Fentaris proxy has been validated.
-- Avoid destructive changes. Every step must be reversible.
-- Do not invent commands or options: always check the installed version and its --help output.
+   1. A supported Node.js and npm installation. Prefer Node 24 LTS on a new machine.
+   2. The official Fentaris CLI.
+   3. All official Fentaris skills installed for the AI clients I select.
+   4. A local Fentaris proxy project, preferably under ~/fentaris-proxy.
+   5. Only the MCP servers I approve migrated behind Fentaris.
+   6. The selected AI clients connected to one validated Fentaris endpoint.
+   7. Credentials and OAuth tokens stored securely.
+   8. Successful static and runtime validation.
+   9. Backups and exact rollback instructions.
 
-PHASE 1 — SILENT INVENTORY
+   SAFETY RULES
 
-Without modifying anything:
+   - Inventory the environment before changing anything.
+   - Never expose or repeat passwords, tokens, API keys, client secrets, refresh tokens, or credential values.
+   - Never place secrets in source code, fentaris.json, prose, logs, shell arguments, or retained agent-terminal output.
+   - Do not run an API-key generation command if its raw output will be captured in the agent transcript. Use a verified secret-output channel, protected input with --value-stdin, or ask me to run the single generation command in a private terminal.
+   - Back up every client configuration before editing it.
+   - Do not remove or disable original MCP entries until Fentaris and that client have both been validated.
+   - Keep Fentaris bound to 127.0.0.1 unless I explicitly approve network exposure after authentication and policy are configured.
+   - Ask before privileged installation, changing a security boundary, sharing credentials between users, creating autostart, or removing original configuration.
+   - Do not claim that Codex, Claude, Cursor, or other agent/persona definitions are imported into Fentaris. Fentaris centralizes MCP servers, identity, policy, credentials, and observability; client-specific agents remain in their client.
+   - Do not claim completion if build, static checks, runtime checks, or selected-client connectivity failed.
 
-1. detect the operating system, architecture, and shell;
-2. check the presence and version of:
-   - Node.js;
-   - npm, pnpm, and bun;
-   - Git;
-   - Fentaris CLI;
-   - npx skills;
-3. identify installed AI clients or agents, for example:
-   - Codex;
-   - Claude Code and Claude Desktop;
-   - Cursor;
-   - Gemini CLI;
-   - OpenCode;
-   - other MCP-compatible clients;
-4. locate their MCP configurations, both global and in accessible workspaces;
-5. locate installed skills and agent/persona definitions;
-6. build a redacted inventory showing only:
-   - client name;
-   - configuration path;
-   - MCP names;
-   - transport type: stdio, Streamable HTTP, or SSE;
-   - presence of credentials, without showing their values;
-   - presence of agent definitions or skills.
+   PHASE 1 — READ-ONLY INVENTORY
 
-Do not modify any files yet.
+   Without modifying the machine:
 
-PHASE 2 — INTERACTIVE SELECTION
+   1. Detect the operating system, architecture, shell, and available package manager.
+   2. Inspect the versions or absence of Node.js, npm/npx, pnpm/bun, Git, and Fentaris.
+   3. Detect installed MCP-capable clients such as Codex, Claude Code, Claude Desktop, Cursor, Gemini CLI, OpenCode, and any others you can identify reliably.
+   4. Locate their documented global and workspace MCP configuration without scanning unrelated personal data.
+   5. Inventory MCP server names, configuration scope, and transport: stdio, Streamable HTTP, SSE, or unknown.
+   6. Note whether credentials are present without reading their values into the conversation.
+   7. Inventory installed skills and client-owned agent/persona definitions.
 
-Show me a very brief inventory summary and ask me, using multiple selection if available:
+   Show me only a short, redacted summary.
 
-“Which clients do you want to integrate with Fentaris?”
+   PHASE 2 — CONSENT
 
-Offer only the clients actually detected, plus:
-- all detected clients;
-- only the current client;
-- none, configure only Fentaris.
+   Ask which detected clients I want to integrate. Offer only clients you actually detected, plus:
 
-Then ask me which MCPs to import. Show the name, source client, and transport, but not the credentials.
+   - All detected clients
+   - Current client only
+   - Fentaris only
 
-If you find agent/persona definitions, briefly explain that Fentaris centralizes MCPs, identity, policies, and credentials, but does not replace the client's agent system. Ask whether I want to:
+   Then ask which detected MCP servers I want to migrate. Show the server name, source client, configuration scope, and transport, but never credential values.
 
-- leave the agents where they are and install only the Fentaris skills;
-- install the Fentaris skills and configure those agents to use the proxy;
-- make no changes to the agents.
+   If agent or persona definitions exist, explain that they remain in their client. Ask whether I want to:
 
-Do not promise to “import agents into Fentaris” unless an official feature supports it.
+   - Leave them unchanged
+   - Install the Fentaris skills and configure their client to use the Fentaris endpoint
+   - Skip agent-related changes
 
-PHASE 3 — INSTALLATION
+   Do not ask for information you already discovered.
 
-After my confirmation:
+   Use safe defaults for choices that do not change a security boundary:
 
-1. install a supported version of Node.js if it is missing;
-2. check \`node --version\` and \`npm --version\` again;
-3. install or update the official CLI:
+   - A user-owned project directory
+   - Loopback networking
+   - Endpoint path /mcp
+   - An available local port
 
-   npm install -g @fentaris/cli
+   PHASE 3 — INSTALLATION
 
-4. verify:
+   After receiving consent:
 
-   fentaris --version
-   fentaris --help
+   1. Install a supported Node.js version only if it is missing or incompatible. Prefer Node 24 LTS for a new machine and use a trusted platform installer.
+   2. Verify:
 
-5. install all official Fentaris skills for each selected client using the explicit target supported by \`npx skills\`, for example:
+      node --version
+      npm --version
 
-   npx skills add Fentaris/fentaris-skills -g -a <agent> --skill '*'
+   3. Install or update the official CLI:
 
-   First check the targets and options actually available with \`--help\` or \`--list\`. Do not use \`--all\` without my consent.
+      npm install -g @fentaris/cli
 
-6. If a client must be restarted to load the skills, continue the setup using the official documentation and CLI anyway. Report the restart as the final action, not as a reason to stop working.
+   4. Verify:
 
-PHASE 4 — PROJECT CREATION
+      fentaris --version
+      fentaris --help
 
-If a suitable Fentaris project does not already exist:
+   5. Inspect the available \`npx skills\` targets and install every official Fentaris skill for each selected supported agent, using an explicit target, for example:
 
-1. propose these defaults:
-   - directory: ~/fentaris-proxy;
-   - package manager: npm, or the one already available and preferred in the environment;
-   - host: 127.0.0.1;
-   - port: 4000, or the first available port;
-   - endpoint: /mcp;
-2. first check the options with:
+      npx skills add Fentaris/fentaris-skills -g -a <agent> --skill '*'
 
-   fentaris init --help
+   6. Do not use --all unless I approve installing the skills into every supported agent.
+   7. If a client must restart to load newly installed skills, continue the setup using official CLI help and documentation. Report the required restart at the end.
 
-3. generate the project with explicit, non-interactive options;
-4. do not build the scaffold manually if the CLI can generate it;
-5. inspect the generated files before modifying them;
-6. keep \`fentaris.json\` as the source of truth for the host, port, path, entry point, and auth directory.
+   PHASE 4 — CREATE OR SELECT THE PROJECT
 
-If you detect an existing Fentaris project, ask whether I want to use it or create a new one.
+   If no suitable Fentaris project exists:
 
-PHASE 5 — IMPORTING MCPS
+   1. Inspect:
 
-For each approved MCP:
+      fentaris init --help
 
-1. preserve its name, command, arguments, URL, and transport when compatible;
-2. use the high-level Fentaris APIs:
-   - \`app.mcp(...)\` or \`mcp(...)\`;
-   - \`stdio(...)\`;
-   - \`streamableHttp(...)\`;
-   - \`sse(...)\`, when supported;
-3. use stable, unique names because they become tool prefixes;
-4. do not use wrappers such as \`sh -lc\` if the command can be declared directly;
-5. do not automatically import broken, duplicate, or unrecognized servers: report them and ask for confirmation;
-6. do not put secret values in TypeScript or \`fentaris.json\`;
-7. transfer credentials only through a secure, approved path;
-8. if a secret value cannot be migrated without displaying it or reading it in plain text, ask me to re-enter it through protected input or leave that integration pending.
+   2. Create a minimal project using explicit, non-interactive options.
+   3. Default to:
+      - Directory: ~/fentaris-proxy
+      - Host: 127.0.0.1
+      - Path: /mcp
+      - Port: 4000, or the first available port
+   4. Use an available package manager and install dependencies.
+   5. Inspect the generated files before editing them.
+   6. Keep port, endpoint path, entrypoint, and auth directory in fentaris.json.
+   7. Host is not a fentaris.json field. Retain the default loopback binding unless intentional exposure is configured through a supported application option.
 
-Use the official Fentaris commands for credentials and secrets. Prefer:
+   If a suitable Fentaris project already exists, ask whether I want to reuse it or create a separate one.
 
-- \`fentaris secrets setup --dry-run --json\`;
-- \`fentaris secrets setup --yes --json\`;
-- \`fentaris secrets set <reference> --value-stdin\`;
-- \`FENTARIS_AUTH_KEY\` or the mechanism generated by the project.
+   PHASE 5 — MIGRATE MCP SERVERS
 
-Do not print secret contents.
+   For each approved MCP server:
 
-PHASE 6 — OAUTH 2.1
+   1. Preserve a stable, unique name, command and arguments or URL, transport, and required working directory.
+   2. Map stdio servers directly to the Fentaris stdio transport without shell wrappers unless officially required.
+   3. Map remote servers to their actual Streamable HTTP or SSE transport.
+   4. Detect loopback, private, and link-local upstream or OAuth endpoints.
+   5. Ask before allowing private destinations.
+   6. Prefer a narrow network.allowedPrivateHosts allow-list.
+   7. Use allowPrivateNetworkUrls: true only if I explicitly accept the broader SSRF exposure.
+   8. Use high-level Fentaris APIs such as:
+      - app.mcp(...)
+      - mcp(...)
+      - stdio(...)
+      - streamableHttp(...)
+      - sse(...)
+   9. Do not merge duplicate names with different commands, URLs, scopes, or credentials without asking.
+   10. Leave unsupported or unknown transports unchanged and report them.
+   11. Move static credentials only through Fentaris encrypted secrets and protected stdin or human input.
+   12. Never copy a client’s OAuth token cache. Configure a new supported Fentaris OAuth flow instead.
 
-Clearly distinguish between:
+   PHASE 6 — AUTHENTICATION
 
-A. client authentication to Fentaris;
-B. Fentaris authentication to upstream MCPs.
+   Keep these two boundaries separate:
 
-For upstream Streamable HTTP or SSE MCPs that are protected by OAuth 2.1, ask me individually whether I want to configure OAuth.
+   A. Clients authenticating to Fentaris
+   B. Fentaris authenticating to upstream MCP servers
 
-If I confirm:
+   For client access, ask whether this is:
 
-1. use the official \`oauth()\` API and current Fentaris documentation;
-2. prefer OAuth Authorization Code with PKCE and per-user tokens;
-3. use preregistered clients or client credentials only when required by the provider;
-4. store tokens and registrations in Fentaris encrypted storage;
-5. verify that a persistent encryption key exists;
-6. start login with the official command supported by the installed version, for example:
+   - A personal loopback-only setup
+   - A setup requiring Fentaris API keys
+   - A setup requiring users and groups
+   - A setup behind an existing trusted authentication boundary
 
-   fentaris auth login <mcp> --as user:<user>
+   Use x-fentaris-api-key only when selected. Store the key through the client’s supported secret mechanism and never log it.
 
-7. let me complete consent and login in the browser;
-8. do not attempt \`oauth()\` for a stdio MCP because that transport cannot carry OAuth authorization;
-9. if the environment is headless, use the documented mode to print or present the URL without exposing tokens.
+   Because --generate prints the raw API key once, only run it through a verified, non-recorded secret-output channel. Otherwise, ask me to generate it in a private terminal or provide it through protected input and --value-stdin.
 
-Do not confuse upstream OAuth with client access to the proxy. For local proxy access, use Fentaris API keys or a supported authentication boundary when required.
+   For an OAuth 2.1 upstream:
 
-PHASE 7 — IDENTITY AND POLICIES
+   1. Use oauth() only with native Streamable HTTP or SSE transports, never stdio.
+   2. Use Authorization Code with PKCE for human accounts.
+   3. Choose per-user tokens only after distinct, authenticated Fentaris user identities are configured. Unauthenticated callers collapse to the shared OAuth session.
+   4. For a personal, unauthenticated loopback setup, explain the account sharing and ask me to approve shared tokens.
+   5. Use shared tokens or client credentials in any topology only after I approve that security boundary.
+   6. Ensure FENTARIS_AUTH_KEY or an explicit OAuth store provides encrypted persistence.
+   7. Start consent with the currently documented fentaris auth login command.
+   8. Let me complete login and consent in the browser.
+   9. Use --print-url in a headless environment.
+   10. Verify with fentaris auth status without exposing tokens.
 
-Ask whether I want:
+   Do not describe an Authorization Code flow as unattended. The human consent step is intentional.
 
-- personal local mode;
-- a Fentaris API key;
-- separate users and groups;
-- allow-list policies.
+   PHASE 7 — VALIDATION GATE
 
-Keep the setup minimal for a personal, local configuration.
+   Before changing any AI-client configuration:
 
-If I enable an API key:
+   1. Install project dependencies.
+   2. Run the available build and typecheck scripts.
+   3. Run:
 
-1. use \`fentaris auth api-key\`;
-2. prefer generation through the CLI;
-3. show the key only once through the available secure channel;
-4. do not save it in logs;
-5. configure clients with \`x-fentaris-api-key\` through their secret storage, if supported.
+      fentaris check --offline --json
 
-Do not leave an \`allowAll\` policy in place before exposing the proxy outside localhost.
+   4. Run:
 
-PHASE 8 — VALIDATION BEFORE MIGRATION
+      fentaris doctor --json
 
-Perform at least:
+   5. Start the proxy under supervision.
+   6. Run:
 
-1. installation of the project dependencies;
-2. the available build or typecheck;
-3. \`fentaris check --offline --json\`;
-4. \`fentaris doctor --json\`;
-5. a controlled proxy start;
-6. \`fentaris doctor --runtime --json\`;
-7. MCP initialization and \`tools/list\`;
-8. verification that each approved upstream exposes the expected tools;
-9. for OAuth, \`fentaris auth status\` without showing tokens;
-10. at least one non-destructive call to a safe tool, when possible.
+      fentaris doctor --runtime --json
 
-If a check fails, diagnose and fix the cause. Do not modify the clients' original configurations while the runtime is unhealthy.
+   7. List effective tools through Fentaris.
+   8. Verify non-sensitive authentication and OAuth status when used.
+   9. Make one safe, non-destructive tool call when possible.
 
-PHASE 9 — CLIENT CONFIGURATION
+   Diagnose and fix failures.
 
-Only after validation succeeds:
+   Keep any failing upstream in its original client configuration, and do not cut over a client while the Fentaris proxy is unhealthy.
 
-1. create a backup of each selected client's configuration;
-2. add an MCP server named \`fentaris\` that points to the validated local endpoint, normally:
+   PHASE 8 — CLIENT CUTOVER
 
-   http://127.0.0.1:4000/mcp
+   Only after validation succeeds, for every selected client:
 
-3. add the \`x-fentaris-api-key\` header only if configured and through a secure mechanism;
-4. verify that the format is correct for the client version;
-5. do not remove the original MCPs immediately;
-6. verify the connection from the client when technically possible;
-7. finally ask whether I want to:
-   - disable the original MCPs that have now been migrated;
-   - remove them while keeping the backup;
-   - leave them unchanged.
+   1. Create a timestamped backup of its exact configuration.
+   2. Validate the existing configuration syntax.
+   3. Add one MCP server named fentaris pointing to the validated endpoint, normally:
 
-Apply the choice without touching unrelated configurations.
+      http://127.0.0.1:4000/mcp
 
-PHASE 10 — PERSISTENT STARTUP
+   4. Add the API-key header only through supported secret or header storage when authentication is enabled.
+   5. Validate the configuration syntax again.
+   6. Reload or restart the client only when required.
+   7. Confirm that the client can initialize and list the expected proxied tools.
+   8. Then ask whether the migrated original MCP entries should:
+      - Remain configured
+      - Be disabled
+      - Be removed while retaining the backup
 
-Ask whether I want Fentaris to:
+   If the client is sandboxed or remote and cannot reach loopback, use its approved local networking path. Do not bind Fentaris publicly merely as a workaround.
 
-- be started manually;
-- start automatically at login;
-- run through an existing process manager.
+   PHASE 9 — OPTIONAL AUTOSTART
 
-Do not create system services or scheduled tasks without consent. If I choose automatic startup, use the least invasive native mechanism and also create uninstall instructions.
+   Ask whether Fentaris should:
 
-FINAL RESULT
+   - Start manually
+   - Start at user login
+   - Run through an existing process manager
 
-Conclude with a brief report containing:
+   Do not create a service or scheduled task without consent.
 
-- installed versions;
-- project directory;
-- Fentaris endpoint;
-- configured clients;
-- imported MCPs;
-- skipped MCPs or ones still to be completed;
-- configured authentication and policies;
-- OAuth status for each upstream, without tokens;
-- installed skills and clients that must be restarted;
-- validations performed and their outcomes;
-- backup paths;
-- how to start and stop Fentaris;
-- how to restore the previous configurations.
+   If autostart is selected, use the least invasive user-level mechanism and provide removal instructions.
 
-Do not claim that the setup is complete unless the build, checks, runtime, and client connection have been verified. If you are blocked, stop and state exactly which check failed, what you have already tried, and the single input or permission required to continue.`)
+   FINAL REPORT
+
+   Return a concise report containing:
+
+   - Installed versions
+   - Project directory and endpoint
+   - Configured clients and required restarts
+   - Migrated, skipped, and blocked MCP servers
+   - Non-sensitive client-authentication and OAuth status
+   - Installed skill targets
+   - Validation commands and results
+   - Backup paths
+   - Start and stop commands
+   - Rollback steps
+   - Anything that could not be verified
+
+   If blocked, stop safely and state:
+
+   1. The exact failed check
+   2. What you attempted
+   3. The single permission or input required to continue`)
       copyResetTimer.current = setTimeout(() => setCopied(false), 1800)
     } catch {
       setCopied(false)
