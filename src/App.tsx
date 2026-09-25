@@ -135,6 +135,13 @@ function IntegrationMarquee() {
   </section>
 }
 
+function MicrosoftForStartupsCard({ compact = false }: { compact?: boolean }) {
+  return <div className={`microsoft-card${compact ? ' microsoft-card-compact' : ''}`} aria-label="Proud to partner with Microsoft for Startups">
+    <div className="microsoft-card-brand"><span className="microsoft-mark" aria-hidden="true"><i /><i /><i /><i /></span><span>Microsoft</span></div>
+    <div className="microsoft-card-copy"><span>Proud to partner with</span><strong>Microsoft for Startups</strong></div>
+  </div>
+}
+
 function Hero() {
   const [copied, setCopied] = useState(false)
   const copyResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -421,6 +428,7 @@ function Hero() {
     <section className="hero" id="top">
       <div className="hero-shell">
         <div className="hero-copy">
+          <MicrosoftForStartupsCard compact />
           <h1>Manage every MCP</h1>
           <p>Run, route, and manage every MCP server behind <span>one stable endpoint</span>—with authentication, policy, and observability built in</p>
           <div className="hero-links" id="setup"><button className={`copy-prompt-button${copied ? ' is-copied' : ''}`} onClick={copy} aria-label={copied ? 'Agent prompt copied' : 'Copy agent prompt'}><span>{copied ? 'Copied' : 'Copy agent prompt'}</span><span className="copy-prompt-icon" aria-hidden="true">{copied ? <svg viewBox="0 0 16 16"><path d="m3 8.2 3.1 3.1L13 4.8" /></svg> : <svg viewBox="0 0 16 16"><rect x="5.2" y="5.2" width="7.3" height="7.3" rx="1.4" /><path d="M10.5 5.2V4.8c0-.7-.6-1.3-1.3-1.3H4.8c-.7 0-1.3.6-1.3 1.3v4.4c0 .7.6 1.3 1.3 1.3h.4" /></svg>}</span></button><a href="https://fentaris.mintlify.app/getting-started/quickstart">Quickstart <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></a></div>
@@ -827,6 +835,7 @@ function Landing2Page() {
       <div className="l2-glow" aria-hidden="true" />
       <div className="l2-hero-inner">
         <a className="l2-release" href="https://fentaris.mintlify.app/getting-started/quickstart"><span>New</span> Agent setup skills are available <Arrow /></a>
+        <MicrosoftForStartupsCard compact />
         <p className="l2-kicker">The centralized MCP proxy</p>
         <h1>One secure gateway<br />for every <em>AI agent.</em></h1>
         <p className="l2-lede">Route multiple MCP servers, enforce policy per user, and observe every tool call—without changing how your agents work.</p>
@@ -859,12 +868,12 @@ function Landing2Page() {
     <section className="l2-explore"><div className="l2-section-heading"><span>Explore Fentaris</span><h2>Everything you need to build.</h2></div><div className="l2-link-grid">{landing2Links.map(item => <a href={item.href} key={item.title}><small>{item.eyebrow}</small><h3>{item.title}</h3><p>{item.copy}</p><b>Read the guide <Arrow /></b></a>)}</div></section>
 
     <section className="l2-final"><span>Open source · TypeScript · MCP native</span><h2>Give every agent the right tools.<br /><em>And only the right tools.</em></h2><a className="l2-primary" href="https://fentaris.mintlify.app/getting-started/quickstart">Build your first proxy <Arrow /></a></section>
-    <footer className="l2-footer"><a className="l2-brand" href="/landing2"><Logo /><b>fentaris</b></a><p>The centralized MCP proxy.</p><div><a href="https://fentaris.mintlify.app">Docs</a><a href="https://github.com/Fentaris/fentaris">GitHub</a></div></footer>
+    <footer className="l2-footer"><a className="l2-brand" href="/landing2"><Logo /><b>fentaris</b></a><div className="l2-footer-links"><a href="https://fentaris.mintlify.app">Docs</a><a href="https://github.com/Fentaris/fentaris">GitHub</a></div><MicrosoftForStartupsCard compact /></footer>
   </div>
 }
 
 function Footer() {
-  return <footer className="site-footer"><div className="footer-main"><div className="footer-brand"><a className="brand" href="/"><Logo /><b>fentaris</b></a><p>The open-source control plane for your MCP servers.</p><span>Run, route, manage, and observe MCP through one stable endpoint.</span></div><div className="footer-column"><b>Product</b><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#quickstart">Quickstart</a></div><div className="footer-column"><b>Resources</b><a href="https://fentaris.mintlify.app">Documentation</a><a href="https://fentaris.mintlify.app/concepts/architecture">Architecture</a><a href="https://fentaris.mintlify.app/getting-started/quickstart">Getting started</a></div><div className="footer-column"><b>Community</b><a href="https://github.com/Fentaris/fentaris">GitHub</a><a href="https://github.com/Fentaris/fentaris/issues">Issues</a><a href="https://github.com/Fentaris/fentaris/blob/main/LICENSE.txt">MIT License</a></div></div><div className="footer-bottom"><span>© 2026 Fentaris</span></div></footer>
+  return <footer className="site-footer"><div className="footer-main"><div className="footer-brand"><a className="brand" href="/"><Logo /><b>fentaris</b></a><p>The open-source control plane for your MCP servers.</p><span>Run, route, manage, and observe MCP through one stable endpoint.</span></div><div className="footer-column"><b>Product</b><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#quickstart">Quickstart</a></div><div className="footer-column"><b>Resources</b><a href="https://fentaris.mintlify.app">Documentation</a><a href="https://fentaris.mintlify.app/concepts/architecture">Architecture</a><a href="https://fentaris.mintlify.app/getting-started/quickstart">Getting started</a></div><div className="footer-partner"><MicrosoftForStartupsCard compact /></div></div><div className="footer-bottom"><span>© 2026 Fentaris</span><div className="footer-bottom-links"><a href="https://github.com/Fentaris/fentaris">GitHub</a><a href="https://github.com/Fentaris/fentaris/issues">Issues</a><a href="https://github.com/Fentaris/fentaris/blob/main/LICENSE.txt">MIT License</a></div></div></footer>
 }
 
 function App() {
